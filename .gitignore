@@ -1,0 +1,29 @@
+Obj/
+UnityGenerated/
+Library/
+Temp/
+Sonagi Debug Watcher Console/
+**/.DS_Store
+*.csproj
+*.sln
+*.suo
+*.unityproj
+**/.pidb
+*.sublime-*
+*.userprefs
+VSCode.meta
+Assets/Gizmos.meta
+Assets/Editor Default Resources.meta
+*.apk
+crashlytics-build.properties.meta
+/Build/ios/build/
+/Build/ios/Classes/
+/Build/ios/Data/
+/Build/ios/Frameworks/
+/Build/ios/Libraries/
+*.backup
+.vscode/launch.json
+Assets/VSCode/
+.idea/*
+.vscode/settings.json
+Logs/Packages-Update.log
