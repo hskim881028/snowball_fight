@@ -1,17 +1,13 @@
-﻿using UnityEngine;
+﻿using System.Collections;
 
-public class AttackCommand : ICommand {
-
-   public AttackCommand(Player player) {
-   }
-    
-    public void Execute(Vector2 delta) {
-        Attack();
+namespace hskim.Command {
+    [CommandMapping(ECommandType.Attack)]
+    public class AttackBaseCommand : BaseCommand {
     }
 
-    public void Undo() {
-    }
-
-    void Attack() {
+    public class AttackCommandHandler : CommandHandler<AttackBaseCommand> {
+        protected override IEnumerator Execute(StageContext context, AttackBaseCommand baseCommand) {
+            throw new System.NotImplementedException();
+        }
     }
 }
