@@ -11,10 +11,10 @@ namespace hskim {
             return new Character(data, new CharacterController(data, variableData, view), view);
         }
         
-        public static Joystick LoadJoyStick(Transform parent) {
+        public static JoystickController LoadJoyStick(Transform parent) {
             var prefab = Resources.Load("Prefab/Joystick/Joystick") as GameObject;
             GameObject clone = Object.Instantiate(prefab, parent);
-            return new Joystick(new JoystickData(), clone.GetComponent<JoystickView>());
+            return new JoystickController(new JoystickData(), clone.GetComponent<JoystickView>());
         }
         
         public static InputService LoadInputService(Transform parent) {

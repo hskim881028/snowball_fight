@@ -6,23 +6,23 @@ using UnityEngine.Serialization;
 namespace hskim {
     public class InputService : MonoBehaviour, IDragHandler, IPointerDownHandler, IPointerUpHandler {
         CommandService mCommandService;
-        Joystick mJoystick;
+        JoystickController mJoystickController;
         
-        public void Init(CommandService commandService, Joystick joystick) {
+        public void Init(CommandService commandService, JoystickController joystickController) {
             mCommandService = commandService;
-            mJoystick = joystick;
+            mJoystickController = joystickController;
         }
         
         public void OnDrag(PointerEventData eventData) {
-            mJoystick.OnDrag(eventData.position);
+            mJoystickController.OnDrag(eventData.position);
         }
 
         public void OnPointerDown(PointerEventData eventData) {
-            mJoystick.OnPointerDown(eventData.position);
+            mJoystickController.OnPointerDown(eventData.position);
         }
 
         public void OnPointerUp(PointerEventData eventData) {
-            mJoystick.OnPointerUp();
+            mJoystickController.OnPointerUp();
         }
         
         void Update() {
@@ -42,8 +42,8 @@ namespace hskim {
                 EnqueueCommand(1, Vector2.down);
             }
 
-            if (mJoystick.Data.Value.magnitude > 0) {
-                EnqueueCommand(1, mJoystick.Data.Value);
+            if (mJoystickController.Data.Value.magnitude > 0) {
+                EnqueueCommand(1, mJoystickController.Data.Value);
             }
         }
 

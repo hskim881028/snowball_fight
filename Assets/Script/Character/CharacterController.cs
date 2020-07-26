@@ -4,7 +4,7 @@ namespace hskim {
     public class CharacterController {
         CharacterData mData;
         CharacterVariableData mVariableData;
-        CharacterView mView;
+        readonly CharacterView mView;
 
         public CharacterController(CharacterData data, 
                                    CharacterVariableData variableData,

@@ -10,19 +10,17 @@ namespace hskim {
         void Awake() {
             mCanvas = GetComponentInChildren<Canvas>().transform;
             InputService inputService = PrefabLoader.LoadInputService(mCanvas);
-            Joystick joystick = PrefabLoader.LoadJoyStick(mCanvas);
-            Services = new Services(inputService, joystick);
-            LoadDummyCharacter();
+            JoystickController joystickController = PrefabLoader.LoadJoyStick(mCanvas);
+            Character character = LoadDummyCharacter(1);
+            Services = new Services(inputService, joystickController, character);
         }
 
         void Update() {
             Services.Update();
         }
 
-        void LoadDummyCharacter() {
-            const int id = 1;
-            var character = PrefabLoader.LoadCharacter(id, transform);
-            Services.CharacterService.Add(id, character);
+        Character LoadDummyCharacter(int id) {
+            return PrefabLoader.LoadCharacter(id, transform);
         }
     }
 }
