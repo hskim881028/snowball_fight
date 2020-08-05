@@ -1,4 +1,4 @@
 # snowball_fight
 
 
-command dispatcher pattern
+ Flux Design Pattern
