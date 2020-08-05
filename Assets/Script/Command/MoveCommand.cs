@@ -1,4 +1,4 @@
-﻿using System.Collections;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 namespace hskim.Command {
@@ -9,7 +9,7 @@ namespace hskim.Command {
     }
 
     public class MoveCommandHandler : CommandHandler<MoveCommand> {
-        protected override IEnumerator Execute(StageContext context, MoveCommand command) {
+        protected override IEnumerator<CustomYieldInstruction> Execute(StageContext context, MoveCommand command) {
             Character character = context.CharacterService.GetCharacter(command.id);
             character.Controller.Move(command.delta);
             yield break;

@@ -19,6 +19,10 @@ namespace hskim {
             Services.Update();
         }
 
+        void LateUpdate() {
+            Services.LateUpdate();
+        }
+
         Character LoadDummyCharacter(int id) {
             return PrefabLoader.LoadCharacter(id, transform);
         }

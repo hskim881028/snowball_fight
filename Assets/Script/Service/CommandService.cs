@@ -9,6 +9,7 @@ namespace hskim {
             new Dictionary<ECommandType, CommandHandler>(new CommandEqualityComparer());
 
         readonly Queue<BaseCommand> mCommands = new Queue<BaseCommand>();
+        readonly LinkedList<IEnumerator<CustomYieldInstruction>> mRunningCommands = new LinkedList<IEnumerator<CustomYieldInstruction>>();
 
         public CommandService() {
             mHandlers.Clear();
@@ -36,6 +37,28 @@ namespace hskim {
         public void Update(StageContext context) {
             ExecuteCommands(context);
         }
+        
+        public void UpdateRunningCommands()
+        {
+            var node = mRunningCommands.First;
+            while (node != null) {
+                var currentNode = node;
+                var next = node.Next;
+                var value = node.Value;
+
+                if (value.Current == null || value.Current.keepWaiting == false) {
+                    try {
+                        if (value.MoveNext() == false) {
+                            mRunningCommands.Remove(currentNode);
+                        }
+                    }
+                    catch (Exception e) {
+                        Debug.LogException(e);
+                    }
+                }
+                node = next;
+            }
+        }
 
         void ExecuteCommands(StageContext context) {
             foreach (var command in mCommands) {
@@ -48,7 +71,9 @@ namespace hskim {
             try {
                 if (mHandlers.ContainsKey(baseCommand.CommandType)) {
                     var handler = mHandlers[baseCommand.CommandType].Execute(context, baseCommand);
-                    handler.MoveNext();
+                    if (handler.MoveNext()) {
+                        mRunningCommands.AddLast(handler);
+                    }
                 }
             } catch (Exception e) {
                 Debug.LogError(e);
@@ -58,6 +83,5 @@ namespace hskim {
         public void EnqueueCommand(BaseCommand command) {
             mCommands.Enqueue(command);
         }
-        
     }
 }

@@ -1,4 +1,6 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
 
 namespace hskim.Command {
     [CommandMapping(ECommandType.Attack)]
@@ -6,7 +8,7 @@ namespace hskim.Command {
     }
 
     public class AttackCommandHandler : CommandHandler<AttackBaseCommand> {
-        protected override IEnumerator Execute(StageContext context, AttackBaseCommand baseCommand) {
+        protected override IEnumerator<CustomYieldInstruction> Execute(StageContext context, AttackBaseCommand baseCommand) {
             throw new System.NotImplementedException();
         }
     }

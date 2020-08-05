@@ -21,5 +21,9 @@
         public void Update() {
             mCommandService.Update(mStageContext);
         }
+
+        public void LateUpdate() {
+            mCommandService.UpdateRunningCommands();
+        }
     }
 }
