@@ -1,29 +1,28 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace hskim {
     public class Stage : SingletonMonoBehaviour<Stage> {
-        Transform mCanvas;
-        
-        Services Services { get; set; }
+        private Transform _canvas;
 
-        void Awake() {
-            mCanvas = GetComponentInChildren<Canvas>().transform;
-            InputService inputService = PrefabLoader.LoadInputService(mCanvas);
-            JoystickController joystickController = PrefabLoader.LoadJoyStick(mCanvas);
-            Character character = LoadDummyCharacter(1);
+        private Services Services { get; set; }
+
+        private void Awake() {
+            _canvas = GetComponentInChildren<Canvas>().transform;
+            var inputService = PrefabLoader.LoadInputService(_canvas);
+            var joystickController = PrefabLoader.LoadJoyStick(_canvas);
+            var character = LoadDummyCharacter(1);
             Services = new Services(inputService, joystickController, character);
         }
 
-        void Update() {
+        private void Update() {
             Services.Update();
         }
 
-        void LateUpdate() {
+        private void LateUpdate() {
             Services.LateUpdate();
         }
 
-        Character LoadDummyCharacter(int id) {
+        private Character LoadDummyCharacter(int id) {
             return PrefabLoader.LoadCharacter(id, transform);
         }
     }

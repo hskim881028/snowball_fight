@@ -1,29 +1,28 @@
 ﻿namespace hskim {
     public class Services {
-        readonly InputService mInputService;
-        readonly CommandService mCommandService;
-        readonly CharacterService mCharacterService;
-        readonly StageContext mStageContext;
-        
-        public CharacterService CharacterService => mCharacterService;
-        
+        private readonly CommandService _commandService;
+        private readonly InputService _inputService;
+        private readonly StageContext _stageContext;
+
         public Services(InputService inputService, JoystickController joystickController, Character character) {
-            mCommandService = new CommandService();
-            mCharacterService = new CharacterService();
-            mCharacterService.Add(character.Data.Id, character);
-            
-            mInputService = inputService;
-            mInputService.Init(mCommandService, joystickController);
-            
-            mStageContext = new StageContext(mCharacterService);
+            _commandService = new CommandService();
+            CharacterService = new CharacterService();
+            CharacterService.Add(character.Data.Id, character);
+
+            _inputService = inputService;
+            _inputService.Init(_commandService, joystickController);
+
+            _stageContext = new StageContext(CharacterService);
         }
 
+        public CharacterService CharacterService { get; }
+
         public void Update() {
-            mCommandService.Update(mStageContext);
+            _commandService.Update(_stageContext);
         }
 
         public void LateUpdate() {
-            mCommandService.UpdateRunningCommands();
+            _commandService.UpdateRunningCommands();
         }
     }
 }

@@ -1,17 +1,17 @@
 ﻿using UnityEngine;
-    
+
 public class SingletonMonoBehaviour<T> : MonoBehaviour where T : SingletonMonoBehaviour<T> {
-    static T mInstance;
+    private static T _instance;
 
     public static T Instance {
         get {
-            mInstance = FindObjectOfType<T>();
-            if (mInstance == null) {
-                GameObject go = new GameObject(typeof(T).Name);
-                mInstance = go.AddComponent<T>();
+            _instance = FindObjectOfType<T>();
+            if (_instance == null) {
+                var go = new GameObject(typeof(T).Name);
+                _instance = go.AddComponent<T>();
             }
 
-            return mInstance;
+            return _instance;
         }
     }
 }

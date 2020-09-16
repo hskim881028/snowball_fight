@@ -5,7 +5,7 @@ namespace hskim.Command {
     public enum ECommandType {
         None,
         Move,
-        Attack,
+        Attack
     }
 
     public static class ExtensionCommandType {
@@ -28,7 +28,7 @@ namespace hskim.Command {
         }
 
         public int GetHashCode(ECommandType obj) {
-            return (int)obj;
+            return (int) obj;
         }
     }
 }

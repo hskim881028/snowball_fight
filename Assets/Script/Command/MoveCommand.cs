@@ -4,14 +4,14 @@ using UnityEngine;
 namespace hskim.Command {
     [CommandMapping(ECommandType.Move)]
     public class MoveCommand : BaseCommand {
-        public int id;
-        public Vector2 delta;
+        public Vector2 mDelta;
+        public int mID;
     }
 
     public class MoveCommandHandler : CommandHandler<MoveCommand> {
         protected override IEnumerator<CustomYieldInstruction> Execute(StageContext context, MoveCommand command) {
-            Character character = context.CharacterService.GetCharacter(command.id);
-            character.Controller.Move(command.delta);
+            var character = context.CharacterService.GetCharacter(command.mID);
+            character.Controller.Move(command.mDelta);
             yield break;
         }
     }

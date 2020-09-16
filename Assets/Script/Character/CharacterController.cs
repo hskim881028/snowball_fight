@@ -2,21 +2,21 @@
 
 namespace hskim {
     public class CharacterController {
-        CharacterData mData;
-        CharacterVariableData mVariableData;
-        readonly CharacterView mView;
+        private readonly CharacterVariableData _variableData;
+        private readonly CharacterView _view;
+        private CharacterData _data;
 
-        public CharacterController(CharacterData data, 
+        public CharacterController(CharacterData data,
                                    CharacterVariableData variableData,
                                    CharacterView view) {
-            mData = data;
-            mVariableData = variableData;
-            mView = view;
+            _data = data;
+            _variableData = variableData;
+            _view = view;
         }
 
         public void Move(Vector2 delta) {
-            mVariableData.AddPosition(delta);
-            mView.SetPosition(mVariableData.Position);
+            _variableData.AddPosition(delta);
+            _view.SetPosition(_variableData.Position);
         }
     }
 }

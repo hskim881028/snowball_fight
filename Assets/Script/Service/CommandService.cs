@@ -5,42 +5,44 @@ using UnityEngine;
 
 namespace hskim {
     public class CommandService {
-        readonly Dictionary<ECommandType, CommandHandler> mHandlers = 
+        private readonly Queue<BaseCommand> _commands = new Queue<BaseCommand>();
+
+        private readonly Dictionary<ECommandType, CommandHandler> _handlers =
             new Dictionary<ECommandType, CommandHandler>(new CommandEqualityComparer());
 
-        readonly Queue<BaseCommand> mCommands = new Queue<BaseCommand>();
-        readonly LinkedList<IEnumerator<CustomYieldInstruction>> mRunningCommands = new LinkedList<IEnumerator<CustomYieldInstruction>>();
+        private readonly LinkedList<IEnumerator<CustomYieldInstruction>> _runningCommands =
+            new LinkedList<IEnumerator<CustomYieldInstruction>>();
 
         public CommandService() {
-            mHandlers.Clear();
+            _handlers.Clear();
             var types = GetType().Assembly.GetTypes();
             foreach (var type in types) {
                 if (IsValidHandler(type)) {
                     var commandType = ExtensionCommandType.TypeToCommandType(type);
                     if (commandType != ECommandType.None) {
-                        if (mHandlers.ContainsKey(commandType)) {
+                        if (_handlers.ContainsKey(commandType)) {
                             Debug.LogError($"Duplicated command handler : {commandType}");
                             continue;
                         }
-                        mHandlers.Add(commandType, Activator.CreateInstance(type) as CommandHandler);
+
+                        _handlers.Add(commandType, Activator.CreateInstance(type) as CommandHandler);
                     }
                 }
             }
         }
 
-        bool IsValidHandler(Type type) {
-            return type.IsSubclassOf(typeof(CommandHandler)) && 
-                   type.BaseType != null && 
+        private bool IsValidHandler(Type type) {
+            return type.IsSubclassOf(typeof(CommandHandler)) &&
+                   type.BaseType != null &&
                    type.BaseType.IsGenericType;
         }
 
         public void Update(StageContext context) {
             ExecuteCommands(context);
         }
-        
-        public void UpdateRunningCommands()
-        {
-            var node = mRunningCommands.First;
+
+        public void UpdateRunningCommands() {
+            var node = _runningCommands.First;
             while (node != null) {
                 var currentNode = node;
                 var next = node.Next;
@@ -49,39 +51,42 @@ namespace hskim {
                 if (value.Current == null || value.Current.keepWaiting == false) {
                     try {
                         if (value.MoveNext() == false) {
-                            mRunningCommands.Remove(currentNode);
+                            _runningCommands.Remove(currentNode);
                         }
                     }
                     catch (Exception e) {
                         Debug.LogException(e);
                     }
                 }
+
                 node = next;
             }
         }
 
-        void ExecuteCommands(StageContext context) {
-            foreach (var command in mCommands) {
+        private void ExecuteCommands(StageContext context) {
+            foreach (var command in _commands) {
                 Excute(context, command);
             }
-            mCommands.Clear();
+
+            _commands.Clear();
         }
 
-        void Excute(StageContext context, BaseCommand baseCommand) {
+        private void Excute(StageContext context, BaseCommand baseCommand) {
             try {
-                if (mHandlers.ContainsKey(baseCommand.CommandType)) {
-                    var handler = mHandlers[baseCommand.CommandType].Execute(context, baseCommand);
+                if (_handlers.ContainsKey(baseCommand.CommandType)) {
+                    var handler = _handlers[baseCommand.CommandType].Execute(context, baseCommand);
                     if (handler.MoveNext()) {
-                        mRunningCommands.AddLast(handler);
+                        _runningCommands.AddLast(handler);
                     }
                 }
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 Debug.LogError(e);
             }
         }
 
         public void EnqueueCommand(BaseCommand command) {
-            mCommands.Enqueue(command);
+            _commands.Enqueue(command);
         }
     }
 }
