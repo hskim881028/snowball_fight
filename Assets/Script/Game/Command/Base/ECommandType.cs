@@ -4,8 +4,8 @@ using System.Collections.Generic;
 namespace hskim.Command {
     public enum ECommandType {
         None,
+        Attack,
         Move,
-        Attack
     }
 
     public static class ExtensionCommandType {

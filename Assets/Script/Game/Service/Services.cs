@@ -1,28 +1,25 @@
-﻿namespace hskim {
+﻿using UnityEngine;
+
+namespace hskim {
     public class Services {
         private readonly CommandService _commandService;
         private readonly InputService _inputService;
-        private readonly StageContext _stageContext;
 
-        public Services(InputService inputService, JoystickController joystickController, Character character) {
-            _commandService = new CommandService();
-            CharacterService = new CharacterService();
-            CharacterService.Add(character.Data.Id, character);
-
-            _inputService = inputService;
-            _inputService.Init(_commandService, joystickController);
-
-            _stageContext = new StageContext(CharacterService);
+        public Services(JoystickController joystickController, Character character) {
+            var characterService = new CharacterService();
+            characterService.Add(character.Data.Id, character);
+            var stageContext = new StageContext(characterService);
+            _commandService = new CommandService(stageContext);
+            _inputService = new InputService(_commandService, joystickController);
         }
 
-        public CharacterService CharacterService { get; }
-
         public void Update() {
-            _commandService.Update(_stageContext);
+            _inputService.Update();
+            _commandService.Update();
         }
 
         public void LateUpdate() {
-            _commandService.UpdateRunningCommands();
+            _commandService.LateUpdate();
         }
     }
 }

@@ -7,10 +7,9 @@ namespace hskim {
 
         private void Awake() {
             _canvas = GetComponentInChildren<Canvas>().transform;
-            var inputService = PrefabLoader.LoadInputService(_canvas);
             var joystickController = PrefabLoader.LoadJoyStick(_canvas);
             var character = LoadDummyCharacter(1);
-            Services = new Services(inputService, joystickController, character);
+            Services = new Services(joystickController, character);
         }
 
         private void Update() {

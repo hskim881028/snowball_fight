@@ -5,6 +5,7 @@ using UnityEngine;
 
 namespace hskim {
     public class CommandService {
+        private readonly StageContext _context;
         private readonly Queue<BaseCommand> _commands = new Queue<BaseCommand>();
 
         private readonly Dictionary<ECommandType, CommandHandler> _handlers =
@@ -13,7 +14,8 @@ namespace hskim {
         private readonly LinkedList<IEnumerator<CustomYieldInstruction>> _runningCommands =
             new LinkedList<IEnumerator<CustomYieldInstruction>>();
 
-        public CommandService() {
+        public CommandService(StageContext context) {
+            _context = context;
             _handlers.Clear();
             var types = GetType().Assembly.GetTypes();
             foreach (var type in types) {
@@ -32,16 +34,14 @@ namespace hskim {
         }
 
         private bool IsValidHandler(Type type) {
-            return type.IsSubclassOf(typeof(CommandHandler)) &&
-                   type.BaseType != null &&
-                   type.BaseType.IsGenericType;
+            return type.IsSubclassOf(typeof(CommandHandler)) && type.BaseType != null && type.BaseType.IsGenericType;
         }
 
-        public void Update(StageContext context) {
-            ExecuteCommands(context);
+        public void Update() {
+            ExecuteCommands();
         }
 
-        public void UpdateRunningCommands() {
+        public void LateUpdate() {
             var node = _runningCommands.First;
             while (node != null) {
                 var currentNode = node;
@@ -63,18 +63,18 @@ namespace hskim {
             }
         }
 
-        private void ExecuteCommands(StageContext context) {
+        private void ExecuteCommands() {
             foreach (var command in _commands) {
-                Excute(context, command);
+                Excute(command);
             }
 
             _commands.Clear();
         }
 
-        private void Excute(StageContext context, BaseCommand baseCommand) {
+        private void Excute(BaseCommand baseCommand) {
             try {
                 if (_handlers.ContainsKey(baseCommand.CommandType)) {
-                    var handler = _handlers[baseCommand.CommandType].Execute(context, baseCommand);
+                    var handler = _handlers[baseCommand.CommandType].Execute(_context, baseCommand);
                     if (handler.MoveNext()) {
                         _runningCommands.AddLast(handler);
                     }

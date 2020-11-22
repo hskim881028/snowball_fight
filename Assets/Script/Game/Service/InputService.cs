@@ -1,13 +1,35 @@
 ﻿using hskim.Command;
 using UnityEngine;
-using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 namespace hskim {
-    public class InputService : MonoBehaviour, IDragHandler, IPointerDownHandler, IPointerUpHandler {
-        private CommandService _commandService;
-        private JoystickController _joystickController;
+    public class InputService {
+        private Image _inputPanel;
+        private readonly CommandService _commandService;
+        private readonly JoystickController _joystickController;
 
-        private void Update() {
+        public InputService(CommandService commandService, JoystickController joystickController) {
+            _commandService = commandService;
+            _joystickController = joystickController;
+        }
+        
+        public void Update() {
+            if (Input.touchCount > 0) {
+                EnqueueCommand(1, Input.touches[0].deltaPosition);
+            }
+
+            if (Input.GetMouseButtonDown(0)) {
+                _joystickController.OnPointerDown(Input.mousePosition);
+            }
+            
+            if (Input.GetMouseButton(0)) {
+                _joystickController.OnDrag(Input.mousePosition);
+            }
+            
+            if (Input.GetMouseButtonUp(0)) {
+                _joystickController.OnPointerUp();
+            }
+            
             if (Input.GetKey(KeyCode.A)) {
                 EnqueueCommand(1, Vector2.left);
             }
@@ -28,24 +50,7 @@ namespace hskim {
                 EnqueueCommand(1, _joystickController.Data.Value);
             }
         }
-
-        public void OnDrag(PointerEventData eventData) {
-            _joystickController.OnDrag(eventData.position);
-        }
-
-        public void OnPointerDown(PointerEventData eventData) {
-            _joystickController.OnPointerDown(eventData.position);
-        }
-
-        public void OnPointerUp(PointerEventData eventData) {
-            _joystickController.OnPointerUp();
-        }
-
-        public void Init(CommandService commandService, JoystickController joystickController) {
-            _commandService = commandService;
-            _joystickController = joystickController;
-        }
-
+    
         private void EnqueueCommand(int id, Vector2 delta) {
             _commandService.EnqueueCommand(new MoveCommand {mID = id, mDelta = delta * Time.deltaTime});
         }

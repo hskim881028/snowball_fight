@@ -16,10 +16,5 @@ namespace hskim {
             var clone = Object.Instantiate(prefab, parent);
             return new JoystickController(new JoystickData(), clone.GetComponent<JoystickView>());
         }
-
-        public static InputService LoadInputService(Transform parent) {
-            var prefab = Resources.Load("Prefab/Input/Input") as GameObject;
-            return Object.Instantiate(prefab, parent).GetComponent<InputService>();
-        }
     }
 }
