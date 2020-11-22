@@ -1,9 +1,6 @@
 {
-    "name": "Game",
-    "references": [
-        "GUID:2e832b6317b8e6f40b62baf3b6aef446",
-        "GUID:560b04d1a97f54a4e82edc0cbbb69285"
-    ],
+    "name": "UniRx",
+    "references": [],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
@@ -11,6 +8,5 @@
     "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [],
-    "versionDefines": [],
-    "noEngineReferences": false
+    "versionDefines": []
 }
