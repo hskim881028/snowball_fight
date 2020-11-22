@@ -1,17 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using hskim.Command;
+using hskim.Action;
 using UnityEngine;
 
 namespace hskim {
     public class CommandService {
         private readonly StageContext _context;
-        private readonly Queue<BaseCommand> _commands = new Queue<BaseCommand>();
+        private readonly Queue<BaseAction> _actions = new Queue<BaseAction>();
 
-        private readonly Dictionary<ECommandType, CommandHandler> _handlers =
-            new Dictionary<ECommandType, CommandHandler>(new CommandEqualityComparer());
+        private readonly Dictionary<EActionType, ActionHandler> _handlers =
+            new Dictionary<EActionType, ActionHandler>(new CommandEqualityComparer());
 
-        private readonly LinkedList<IEnumerator<CustomYieldInstruction>> _runningCommands =
+        private readonly LinkedList<IEnumerator<CustomYieldInstruction>> _runningActions =
             new LinkedList<IEnumerator<CustomYieldInstruction>>();
 
         public CommandService(StageContext context) {
@@ -21,20 +21,20 @@ namespace hskim {
             foreach (var type in types) {
                 if (IsValidHandler(type)) {
                     var commandType = ExtensionCommandType.TypeToCommandType(type);
-                    if (commandType != ECommandType.None) {
+                    if (commandType != EActionType.None) {
                         if (_handlers.ContainsKey(commandType)) {
                             Debug.LogError($"Duplicated command handler : {commandType}");
                             continue;
                         }
 
-                        _handlers.Add(commandType, Activator.CreateInstance(type) as CommandHandler);
+                        _handlers.Add(commandType, Activator.CreateInstance(type) as ActionHandler);
                     }
                 }
             }
         }
 
         private bool IsValidHandler(Type type) {
-            return type.IsSubclassOf(typeof(CommandHandler)) && type.BaseType != null && type.BaseType.IsGenericType;
+            return type.IsSubclassOf(typeof(ActionHandler)) && type.BaseType != null && type.BaseType.IsGenericType;
         }
 
         public void Update() {
@@ -42,7 +42,7 @@ namespace hskim {
         }
 
         public void LateUpdate() {
-            var node = _runningCommands.First;
+            var node = _runningActions.First;
             while (node != null) {
                 var currentNode = node;
                 var next = node.Next;
@@ -51,7 +51,7 @@ namespace hskim {
                 if (value.Current == null || value.Current.keepWaiting == false) {
                     try {
                         if (value.MoveNext() == false) {
-                            _runningCommands.Remove(currentNode);
+                            _runningActions.Remove(currentNode);
                         }
                     }
                     catch (Exception e) {
@@ -64,19 +64,19 @@ namespace hskim {
         }
 
         private void ExecuteCommands() {
-            foreach (var command in _commands) {
+            foreach (var command in _actions) {
                 Excute(command);
             }
 
-            _commands.Clear();
+            _actions.Clear();
         }
 
-        private void Excute(BaseCommand baseCommand) {
+        private void Excute(BaseAction baseAction) {
             try {
-                if (_handlers.ContainsKey(baseCommand.CommandType)) {
-                    var handler = _handlers[baseCommand.CommandType].Execute(_context, baseCommand);
+                if (_handlers.ContainsKey(baseAction.ActionType)) {
+                    var handler = _handlers[baseAction.ActionType].Execute(_context, baseAction);
                     if (handler.MoveNext()) {
-                        _runningCommands.AddLast(handler);
+                        _runningActions.AddLast(handler);
                     }
                 }
             }
@@ -85,8 +85,8 @@ namespace hskim {
             }
         }
 
-        public void EnqueueCommand(BaseCommand command) {
-            _commands.Enqueue(command);
+        public void EnqueueCommand(BaseAction action) {
+            _actions.Enqueue(action);
         }
     }
 }

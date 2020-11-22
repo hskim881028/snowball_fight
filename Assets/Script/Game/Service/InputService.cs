@@ -1,4 +1,4 @@
-﻿using hskim.Command;
+﻿using hskim.Action;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -52,7 +52,7 @@ namespace hskim {
         }
     
         private void EnqueueCommand(int id, Vector2 delta) {
-            _commandService.EnqueueCommand(new MoveCommand {mID = id, mDelta = delta * Time.deltaTime});
+            _commandService.EnqueueCommand(new MoveAction {mID = id, mDelta = delta * Time.deltaTime});
         }
     }
 }
