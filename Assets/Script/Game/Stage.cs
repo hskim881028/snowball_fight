@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-
 namespace hskim {
     public class Stage : SingletonMonoBehaviour<Stage> {
         private Transform _canvas;
