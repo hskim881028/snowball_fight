@@ -22,7 +22,7 @@ namespace SF {
             throw new System.NotImplementedException();
         }
 
-        public void OnNetworkReceive(NetPeer peer, NetPacketReader reader, DeliveryMethod deliveryMethod) {
+        public void OnNetworkReceive(NetPeer peer, NetPacketReader reader, SendType sendType) {
             throw new System.NotImplementedException();
         }
 
