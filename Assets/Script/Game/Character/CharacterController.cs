@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace hskim {
+namespace SF.Character {
     public class CharacterController {
         private readonly CharacterVariableData _variableData;
         private readonly CharacterView _view;

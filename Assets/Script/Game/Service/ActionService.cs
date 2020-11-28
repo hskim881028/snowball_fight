@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using hskim.Action;
+using SF.Action;
 using UnityEngine;
 
-namespace hskim {
+namespace SF.Service {
     public class CommandService {
         private readonly StageContext _context;
         private readonly Queue<BaseAction> _actions = new Queue<BaseAction>();

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-namespace hskim.Action {
+namespace SF.Action {
     [ActionMapping(EActionType.Move)]
     public class MoveAction : BaseAction {
         public Vector2 mDelta;

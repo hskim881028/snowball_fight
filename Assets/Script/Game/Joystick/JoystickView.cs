@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.Serialization;
 
-namespace hskim {
+namespace SF.Joystick {
     public class JoystickView : MonoBehaviour {
         [FormerlySerializedAs("mInsideCircle")] [SerializeField]
         private RectTransform insideCircle;

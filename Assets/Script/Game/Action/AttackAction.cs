@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace hskim.Action {
+namespace SF.Action {
     [ActionMapping(EActionType.Attack)]
     public class AttackAction : BaseAction { }
 

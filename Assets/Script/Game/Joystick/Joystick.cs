@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace hskim {
+namespace SF.Joystick {
     public class Joystick {
         private readonly JoystickView _view;
 

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace hskim.Action {
+namespace SF.Action {
     public enum EActionType {
         None,
         Attack,

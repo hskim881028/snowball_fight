@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace hskim {
+namespace SF.Joystick {
     public readonly struct JoystickData {
         public Vector2 Value { get; }
 

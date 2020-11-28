@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace hskim.Action {
+namespace SF.Action {
     public class BaseAction {
         private static readonly Dictionary<Type, EActionType> CachedTypes = new Dictionary<Type, EActionType>();
 

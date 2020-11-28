@@ -1,11 +1,12 @@
-﻿using UnityEngine;
+﻿using SF.Joystick;
+using UnityEngine;
 
-namespace hskim {
+namespace SF.Service {
     public class Services {
         private readonly CommandService _commandService;
         private readonly InputService _inputService;
 
-        public Services(JoystickController joystickController, Character character) {
+        public Services(JoystickController joystickController, Character.Character character) {
             var characterService = new CharacterService();
             characterService.Add(character.Data.Id, character);
             var stageContext = new StageContext(characterService);

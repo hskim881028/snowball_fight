@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace hskim.Action {
+namespace SF.Action {
     [AttributeUsage(AttributeTargets.Class)]
     public class ActionMappingAttribute : Attribute {
         public ActionMappingAttribute(EActionType actionType) {

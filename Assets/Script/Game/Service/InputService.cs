@@ -1,8 +1,9 @@
-﻿using hskim.Action;
+﻿using SF.Action;
+using SF.Joystick;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace hskim {
+namespace SF.Service {
     public class InputService {
         private Image _inputPanel;
         private readonly CommandService _commandService;

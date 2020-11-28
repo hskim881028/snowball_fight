@@ -1,4 +1,4 @@
-﻿namespace hskim {
+﻿namespace SF.Character {
     public readonly struct Character {
         public CharacterData Data { get; }
         public CharacterController Controller { get; }

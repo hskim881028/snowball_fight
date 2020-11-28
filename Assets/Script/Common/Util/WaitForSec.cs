@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace hskim {
+namespace SF.Common.Util {
     public class WaitForSec : CustomYieldInstruction {
         private readonly float _time;
 

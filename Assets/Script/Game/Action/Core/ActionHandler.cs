@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-namespace hskim.Action {
+namespace SF.Action {
     public abstract class ActionHandler {
         public abstract IEnumerator<CustomYieldInstruction> Execute(StageContext context, BaseAction baseAction);
     }

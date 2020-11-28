@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace hskim {
+namespace SF.Character {
     public class CharacterVariableData {
         public CharacterVariableData(Vector2 position, int hp) {
             Position = position;

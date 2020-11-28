@@ -1,14 +1,14 @@
 ﻿using System.Collections.Generic;
 
-namespace hskim {
+namespace SF.Service {
     public class CharacterService {
-        private readonly Dictionary<int, Character> _characters = new Dictionary<int, Character>();
+        private readonly Dictionary<int, Character.Character> _characters = new Dictionary<int, Character.Character>();
 
-        public Character GetCharacter(int id) {
+        public Character.Character GetCharacter(int id) {
             return _characters[id];
         }
 
-        public void Add(int id, Character character) {
+        public void Add(int id, Character.Character character) {
             _characters.Add(id, character);
         }
     }

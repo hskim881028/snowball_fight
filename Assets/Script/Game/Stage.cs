@@ -1,5 +1,8 @@
-﻿using UnityEngine;
-namespace hskim {
+﻿using SF.Common.Util;
+using SF.Service;
+using UnityEngine;
+
+namespace SF {
     public class Stage : SingletonMonoBehaviour<Stage> {
         private Transform _canvas;
 
@@ -20,7 +23,7 @@ namespace hskim {
             Services.LateUpdate();
         }
 
-        private Character LoadDummyCharacter(int id) {
+        private Character.Character LoadDummyCharacter(int id) {
             return PrefabLoader.LoadCharacter(id, transform);
         }
     }
