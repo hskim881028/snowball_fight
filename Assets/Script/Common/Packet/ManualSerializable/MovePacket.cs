@@ -2,7 +2,7 @@
 using SF.Common.Util;
 using UnityEngine;
 
-namespace SF.Common.Packet {
+namespace SF.Common.Packet.ManualSerializable {
     public struct MovePacket : INetSerializable {
         public byte PlayerId;
         public Vector2 Direction;
