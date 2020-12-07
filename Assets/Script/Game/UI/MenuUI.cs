@@ -7,15 +7,23 @@ namespace SF.UI {
         [SerializeField] private Text _disconnectedInfo;
         [SerializeField] private InputField _ipInputField;
 
-        public void Init(Client client) {
-            
+        private Server _server;
+        private Client _client;
+
+        public void Init(Server server, Client client) {
+            _server = server;
+            _client = client;
         }
         
         public void OnClickHost() {
+            _server.StartServer();
+            _client.Connect("localhost", OnDisconnected);
+            this.gameObject.SetActive(false);
         }
 
         public void OnClickJoin() {
-            
+            _client.Connect(_ipInputField.text, OnDisconnected);
+            this.gameObject.SetActive(false);
         }
 
         private void OnDisconnected(DisconnectInfo info) {

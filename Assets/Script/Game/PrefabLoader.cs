@@ -20,10 +20,10 @@ namespace SF {
             return new JoystickController(new JoystickData(), clone.GetComponent<JoystickView>());
         }
 
-        public static void LoadMenuUI(Transform parent, Client client) {
+        public static void LoadMenuUI(Transform parent, Server server, Client client) {
             var prefab = Resources.Load("Prefab/UI/Menu") as GameObject;
             var clone = Object.Instantiate(prefab, parent);
-            clone.GetComponent<MenuUI>().Init(client);
+            clone.GetComponent<MenuUI>().Init(server, client);
         }
     }
 }

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Globalization;
 using System.Net;
 using System.Net.Sockets;
 using LibChaiiLatte;
@@ -100,7 +99,7 @@ namespace SF {
         public void Connect(string ip, Action<DisconnectInfo> onDisconnected)
         {
             _onDisconnected = onDisconnected;
-            _netManager.Connect(ip, 10515, "ExampleGame");
+            _netManager.Connect(ip, 10515, "EnterGame");
         }
 
         public void OnPeerConnected(NetPeer peer) {
