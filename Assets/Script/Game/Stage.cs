@@ -8,19 +8,30 @@ namespace SF {
 
         private Services Services { get; set; }
 
+        private Client _client;
+
         private void Awake() {
             _canvas = GetComponentInChildren<Canvas>().transform;
-            var joystickController = PrefabLoader.LoadJoyStick(_canvas);
-            var character = LoadDummyCharacter(1);
-            Services = new Services(joystickController, character);
+            _client = new Client();
+            
+            PrefabLoader.LoadMenuUI(_canvas, _client);
+            
+            // var joystickController = PrefabLoader.LoadJoyStick(_canvas);
+            // var character = LoadDummyCharacter(1);
+            // Services = new Services(joystickController, character);
         }
 
         private void Update() {
-            Services.Update();
+            Services?.Update();
+            _client?.Update();
         }
 
         private void LateUpdate() {
-            Services.LateUpdate();
+            Services?.LateUpdate();
+        }
+
+        private void OnDestroy() {
+            _client?.Destroy();
         }
 
         private Character.Character LoadDummyCharacter(int id) {

@@ -1,5 +1,6 @@
 ﻿using SF.Character;
 using SF.Joystick;
+using SF.UI;
 using UnityEngine;
 
 namespace SF {
@@ -17,6 +18,12 @@ namespace SF {
             var prefab = Resources.Load("Prefab/Joystick/Joystick") as GameObject;
             var clone = Object.Instantiate(prefab, parent);
             return new JoystickController(new JoystickData(), clone.GetComponent<JoystickView>());
+        }
+
+        public static void LoadMenuUI(Transform parent, Client client) {
+            var prefab = Resources.Load("Prefab/UI/Menu") as GameObject;
+            var clone = Object.Instantiate(prefab, parent);
+            clone.GetComponent<MenuUI>().Init(client);
         }
     }
 }
