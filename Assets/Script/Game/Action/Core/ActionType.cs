@@ -8,13 +8,13 @@ namespace SF.Action {
         Move,
     }
 
-    public static class ExtensionCommandType {
-        public static EActionType TypeToCommandType(Type type) {
+    public static class ExtensionActionType {
+        public static EActionType TypeToActionType(Type type) {
             if (type.BaseType != null) {
-                var commandType = type.BaseType.GenericTypeArguments[0];
-                var attribute = Attribute.GetCustomAttribute(commandType, typeof(ActionMappingAttribute));
-                if (attribute is ActionMappingAttribute commandMapping) {
-                    return commandMapping.ActionType;
+                var actionType = type.BaseType.GenericTypeArguments[0];
+                var attribute = Attribute.GetCustomAttribute(actionType, typeof(ActionMappingAttribute));
+                if (attribute is ActionMappingAttribute actionMapping) {
+                    return actionMapping.ActionType;
                 }
             }
 
@@ -22,7 +22,7 @@ namespace SF.Action {
         }
     }
 
-    public class CommandEqualityComparer : IEqualityComparer<EActionType> {
+    public class ActionEqualityComparer : IEqualityComparer<EActionType> {
         public bool Equals(EActionType x, EActionType y) {
             return x == y;
         }

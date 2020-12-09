@@ -7,14 +7,14 @@ namespace SF.Action {
 
         public EActionType ActionType {
             get {
-                if (CachedTypes.TryGetValue(GetType(), out var commandType)) {
-                    return commandType;
+                if (CachedTypes.TryGetValue(GetType(), out var actionType)) {
+                    return actionType;
                 }
 
                 var attribute = Attribute.GetCustomAttribute(GetType(), typeof(ActionMappingAttribute), false);
-                if (attribute is ActionMappingAttribute commandAttribute) {
-                    CachedTypes.Add(GetType(), commandAttribute.ActionType);
-                    return commandAttribute.ActionType;
+                if (attribute is ActionMappingAttribute actionAttribute) {
+                    CachedTypes.Add(GetType(), actionAttribute.ActionType);
+                    return actionAttribute.ActionType;
                 }
 
                 return EActionType.None;

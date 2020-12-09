@@ -6,17 +6,17 @@ using UnityEngine.UI;
 namespace SF.Service {
     public class InputService {
         private Image _inputPanel;
-        private readonly CommandService _commandService;
+        private readonly ActionService _actionService;
         private readonly JoystickController _joystickController;
 
-        public InputService(CommandService commandService, JoystickController joystickController) {
-            _commandService = commandService;
+        public InputService(ActionService actionService, JoystickController joystickController) {
+            _actionService = actionService;
             _joystickController = joystickController;
         }
         
         public void Update() {
             if (Input.touchCount > 0) {
-                EnqueueCommand(1, Input.touches[0].deltaPosition);
+                EnqueueAction(1, Input.touches[0].deltaPosition);
             }
 
             if (Input.GetMouseButtonDown(0)) {
@@ -32,28 +32,28 @@ namespace SF.Service {
             }
             
             if (Input.GetKey(KeyCode.A)) {
-                EnqueueCommand(1, Vector2.left);
+                EnqueueAction(1, Vector2.left);
             }
 
             if (Input.GetKey(KeyCode.D)) {
-                EnqueueCommand(1, Vector2.right);
+                EnqueueAction(1, Vector2.right);
             }
 
             if (Input.GetKey(KeyCode.W)) {
-                EnqueueCommand(1, Vector2.up);
+                EnqueueAction(1, Vector2.up);
             }
 
             if (Input.GetKey(KeyCode.S)) {
-                EnqueueCommand(1, Vector2.down);
+                EnqueueAction(1, Vector2.down);
             }
 
             if (_joystickController.Data.Value.magnitude > 0) {
-                EnqueueCommand(1, _joystickController.Data.Value);
+                EnqueueAction(1, _joystickController.Data.Value);
             }
         }
     
-        private void EnqueueCommand(int id, Vector2 delta) {
-            _commandService.EnqueueCommand(new MoveAction {mID = id, mDelta = delta * Time.deltaTime});
+        private void EnqueueAction(int id, Vector2 delta) {
+            _actionService.EnqueueAction(new MoveAction {mID = id, mDelta = delta * Time.deltaTime});
         }
     }
 }

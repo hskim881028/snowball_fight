@@ -11,6 +11,6 @@ namespace SF.Action {
             return Execute(context, (T) baseAction);
         }
 
-        protected abstract IEnumerator<CustomYieldInstruction> Execute(StageContext context, T command);
+        protected abstract IEnumerator<CustomYieldInstruction> Execute(StageContext context, T action);
     }
 }

@@ -4,30 +4,30 @@ using SF.Action;
 using UnityEngine;
 
 namespace SF.Service {
-    public class CommandService {
+    public class ActionService {
         private readonly StageContext _context;
         private readonly Queue<BaseAction> _actions = new Queue<BaseAction>();
 
         private readonly Dictionary<EActionType, ActionHandler> _handlers =
-            new Dictionary<EActionType, ActionHandler>(new CommandEqualityComparer());
+            new Dictionary<EActionType, ActionHandler>(new ActionEqualityComparer());
 
         private readonly LinkedList<IEnumerator<CustomYieldInstruction>> _runningActions =
             new LinkedList<IEnumerator<CustomYieldInstruction>>();
 
-        public CommandService(StageContext context) {
+        public ActionService(StageContext context) {
             _context = context;
             _handlers.Clear();
             var types = GetType().Assembly.GetTypes();
             foreach (var type in types) {
                 if (IsValidHandler(type)) {
-                    var commandType = ExtensionCommandType.TypeToCommandType(type);
-                    if (commandType != EActionType.None) {
-                        if (_handlers.ContainsKey(commandType)) {
-                            Debug.LogError($"Duplicated command handler : {commandType}");
+                    var actionType = ExtensionActionType.TypeToActionType(type);
+                    if (actionType != EActionType.None) {
+                        if (_handlers.ContainsKey(actionType)) {
+                            Debug.LogError($"Duplicated action handler : {actionType}");
                             continue;
                         }
 
-                        _handlers.Add(commandType, Activator.CreateInstance(type) as ActionHandler);
+                        _handlers.Add(actionType, Activator.CreateInstance(type) as ActionHandler);
                     }
                 }
             }
@@ -38,7 +38,7 @@ namespace SF.Service {
         }
 
         public void Update() {
-            ExecuteCommands();
+            Execute();
         }
 
         public void LateUpdate() {
@@ -63,9 +63,9 @@ namespace SF.Service {
             }
         }
 
-        private void ExecuteCommands() {
-            foreach (var command in _actions) {
-                Excute(command);
+        private void Execute() {
+            foreach (var action in _actions) {
+                Excute(action);
             }
 
             _actions.Clear();
@@ -85,7 +85,7 @@ namespace SF.Service {
             }
         }
 
-        public void EnqueueCommand(BaseAction action) {
+        public void EnqueueAction(BaseAction action) {
             _actions.Enqueue(action);
         }
     }
