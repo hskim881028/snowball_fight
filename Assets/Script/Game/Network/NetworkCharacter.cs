@@ -1,7 +1,13 @@
 ﻿using SF.Character;
+using UnityEngine;
 
 namespace SF.Network {
     public class NetworkCharacter {
-        private CharacterData _characterData;
+        public CharacterData _data;
+        public CharacterVariableData _variableData;
+
+        public NetworkCharacter(CharacterData data) {
+            _data = data;
+        }
     }
 }

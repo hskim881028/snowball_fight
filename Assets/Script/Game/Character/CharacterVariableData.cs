@@ -7,7 +7,7 @@ namespace SF.Character {
             Hp = hp;
         }
 
-        public Vector2 Position { get; private set; }
+        public Vector2 Position { get; set; }
         public int Hp { get; }
 
         public void AddPosition(Vector2 value) {

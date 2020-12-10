@@ -1,17 +1,20 @@
 ﻿using LibChaiiLatte;
+using SF.Character;
 using SF.Common.Packet.ManualSerializable;
+using UnityEngine;
 
 namespace SF.Network {
-    public class ServerCharacter : NetworkCharacter{
+    public class ServerCharacter : NetworkCharacter {
         public CharacterPacket CharacterPacket { get; set; }
         public ushort LastProcessedAction { get; private set; }
-        public NetPeer Peer { get;}
-        
-        private CharacterPacket _packet;
+        public NetPeer Peer { get; }
 
-        public ServerCharacter(string name, NetPeer peer) {
+        public CharacterPacket Packet { get; }
+
+        public ServerCharacter(string name, NetPeer peer, Vector2 position) : base(new CharacterData(peer.Id, name)) {
             Peer = peer;
-            _packet = new CharacterPacket {Id = (byte) peer.Id};
+            Packet = new CharacterPacket {Id = (byte) peer.Id};
+            _variableData.Position = position;
         }
     }
 }

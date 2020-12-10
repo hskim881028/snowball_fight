@@ -1,8 +1,10 @@
-﻿using SF.Character;
+﻿using System;
+using SF.Character;
 using SF.Joystick;
 using SF.Network;
 using SF.UI;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace SF {
     public static class PrefabLoader {
@@ -10,7 +12,7 @@ namespace SF {
             var prefab = Resources.Load($"Prefab/Character/Character_{id:D3}") as GameObject;
             var clone = Object.Instantiate(prefab, parent);
             var view = clone.GetComponent<CharacterView>();
-            var data = new CharacterData(id);
+            var data = new CharacterData(id, string.Empty);
             var variableData = new CharacterVariableData(Vector2.zero, 10);
             return new Character.Character(data, new Character.CharacterController(data, variableData, view), view);
         }

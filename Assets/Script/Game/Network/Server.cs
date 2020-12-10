@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.Linq;
+using System.Net;
 using System.Net.Sockets;
 using LibChaiiLatte;
 using LibChaiiLatte.Utils;
@@ -47,25 +48,25 @@ namespace SF.Network {
             _netManager.PollEvents();
             _logicTimer.Update();
         }
-        
+
         private void OnUpdateLogic() {
-            _serverTick = (ushort)((_serverTick + 1) % NetworkGeneral.MaxGameSequence);
-            
-            if (_serverTick % 2 == 0)
-            {
+            _serverTick = (ushort) ((_serverTick + 1) % NetworkGeneral.MaxGameSequence);
+
+            if (_serverTick % 2 == 0) {
                 _serverStatePacket.Tick = _serverTick;
-                
-                foreach(var serverCharacter in _serverManager.ServerCharacters)
-                { 
-                    int statesMax = serverCharacter.Peer.GetMaxSinglePacketSize(SendType.Unreliable) - ServerStatePacket.HeaderSize;
+
+                foreach (var pair in _serverManager.ServerCharacters) {
+                    var serverCharacter = pair.Value;
+                    int statesMax = serverCharacter.Peer.GetMaxSinglePacketSize(SendType.Unreliable) -
+                                    ServerStatePacket.HeaderSize;
                     statesMax /= CharacterPacket.Size;
-                
-                    for (int s = 0; s < (_serverManager.ServerCharacters.Count - 1) / statesMax + 1; s++)
-                    {
+
+                    for (int s = 0; s < (_serverManager.ServerCharacters.Count - 1) / statesMax + 1; s++) {
                         _serverStatePacket.LastProcessedAction = serverCharacter.LastProcessedAction;
                         _serverStatePacket.CharacterStateCount = _serverManager.ServerCharacters.Count;
                         _serverStatePacket.StartState = s * statesMax;
-                        serverCharacter.Peer.Send(WriteSerializable(PacketType.ServerState, _serverStatePacket), SendType.Unreliable);
+                        serverCharacter.Peer.Send(WriteSerializable(PacketType.ServerState, _serverStatePacket),
+                                                  SendType.Unreliable);
                     }
                 }
             }
@@ -76,42 +77,37 @@ namespace SF.Network {
             _netManager.Stop();
             _logicTimer.Stop();
         }
-        
+
         private void OnJoinReceived(JoinPacket packet, NetPeer peer) {
-            // Debug.Log("[S] Join packet received: " + packet.UserName);
-            // var player = new ServerPlayer(packet, packet.UserName, peer);
-            // _playerManager.AddPlayer(player);
-            //
-            // player.Spawn(new Vector2(Random.Range(-2f, 2f), Random.Range(-2f, 2f)));
-            //
-            // //Send join accept
-            // var ja = new JoinAcceptPacket { Id = player.Id, ServerTick = _serverTick };
-            // peer.Send(WritePacket(ja), SendType.ReliableOrdered);
-            //
-            // //Send to old players info about new player
-            // var pj = new PlayerJoinedPacket // 들어온 친구한테 기존 정보 다 보내줌
-            // {
-            //     UserName = packet.UserName,
-            //     NewPlayer = true,
-            //     InitialPlayerState = player.NetworkState,
-            //     ServerTick = _serverTick
-            // };
-            // _netManager.SendToAll(WritePacket(pj), SendType.ReliableOrdered, peer);
-            //
-            // // 이전 유저들에게 정보 다 보내줌  
-            // pj.NewPlayer = false;
-            // foreach(ServerPlayer otherPlayer in _serverManager)
-            // {
-            //     if(otherPlayer == player)
-            //         continue;
-            //     pj.UserName = otherPlayer.Name;
-            //     pj.InitialPlayerState = otherPlayer.NetworkState;
-            //     peer.Send(WritePacket(pj), SendType.ReliableOrdered);
-            // }
+            Debug.Log("[S] Join packet received: " + packet.UserName);
+            var serverCharacter = new ServerCharacter(packet.UserName, peer, Vector2.zero);
+            _serverManager.AddCharadcter((byte)peer.Id, serverCharacter);
+
+            //Send join accept
+            var ja = new JoinAcceptPacket {Id = (byte)peer.Id, ServerTick = _serverTick};
+            peer.Send(WritePacket(ja), SendType.ReliableOrdered);
+
+            // 들어온 친구한테 기존 정보 다 보내줌
+            var pj = new PlayerJoinedPacket 
+            {
+                UserName = packet.UserName,
+                NewPlayer = true,
+                CharacterPacket = serverCharacter.Packet,
+                ServerTick = _serverTick
+            };
+            _netManager.SendToAll(WritePacket(pj), SendType.ReliableOrdered, peer);
+
+            // 이전 유저들에게 정보 다 보내줌  
+            pj.NewPlayer = false;
+            foreach (var pair in _serverManager.ServerCharacters.Where(pair => pair.Key != (byte) peer.Id)) {
+                pj.UserName = pair.Value._data.Name;
+                pj.CharacterPacket = pair.Value.Packet;
+                peer.Send(WritePacket(pj), SendType.ReliableOrdered);
+            }
         }
-   
+
         private MovePacket _movePacket;
-        
+
         private NetDataWriter WriteSerializable<T>(PacketType type, T packet) where T : struct, INetSerializable {
             _cachedWriter.Reset();
             _cachedWriter.Put((byte) type);
@@ -125,9 +121,8 @@ namespace SF.Network {
             _packetProcessor.Write(_cachedWriter, packet);
             return _cachedWriter;
         }
-        
-        private void OnInputReceived(NetPacketReader reader, NetPeer peer)
-        {
+
+        private void OnInputReceived(NetPacketReader reader, NetPeer peer) {
             // if (peer.Tag == null)
             //     return;
             //
@@ -139,16 +134,15 @@ namespace SF.Network {
             // if(antilagApplied)
             //     _serverManager.DisableAntilag();
         }
-        
+
         public void OnPeerConnected(NetPeer peer) {
             Debug.Log($"[Server] Player connected: {peer.EndPoint}");
         }
-        
+
         public void OnPeerDisconnected(NetPeer peer, DisconnectInfo disconnectInfo) {
             Debug.Log($"[Server] Player disconnected: {disconnectInfo.Reason}");
 
-            if (peer.Tag != null)
-            {
+            if (peer.Tag != null) {
                 // byte playerId = (byte)peer.Id;
                 // if (_playerManager.RemovePlayer(playerId))
                 // {
@@ -157,7 +151,7 @@ namespace SF.Network {
                 // }
             }
         }
-        
+
         public void OnNetworkError(IPEndPoint endPoint, SocketError socketError) {
             Debug.Log($"[Server] NetworkError: {socketError}");
         }
@@ -178,14 +172,13 @@ namespace SF.Network {
         public void OnConnectionRequest(ConnectionRequest request) {
             request.AcceptIfKey("EnterGame");
         }
-        
+
         public void OnNetworkReceive(NetPeer peer, NetPacketReader reader, SendType sendType) {
             byte packetType = reader.GetByte();
             if (packetType >= NetworkGeneral.PacketTypesCount)
                 return;
             PacketType pt = (PacketType) packetType;
-            switch (pt)
-            {
+            switch (pt) {
                 case PacketType.Movement: // 매번 클라에서 보내주고있음
                     OnInputReceived(reader, peer);
                     break;
