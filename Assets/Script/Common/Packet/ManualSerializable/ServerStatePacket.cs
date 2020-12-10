@@ -2,12 +2,12 @@
 
 namespace SF.Common.Packet.ManualSerializable {
     public struct ServerStatePacket : INetSerializable {
-        public ushort Tick { get; private set; }
-        public ushort LastProcessedAction { get; private set; }
+        public ushort Tick { get; set; }
+        public ushort LastProcessedAction { get; set; }
 
-        public int PlayerStateCount { get; set; }
+        public int CharacterStateCount { get; set; }
         public int StartState { get; set; }
-        public PlayerPacket[] Players;
+        public CharacterPacket[] CharacterStates;
 
         public const int HeaderSize = sizeof(ushort) * 2;
 
@@ -15,22 +15,22 @@ namespace SF.Common.Packet.ManualSerializable {
             writer.Put(Tick);
             writer.Put(LastProcessedAction);
 
-            for (int i = 0; i < PlayerStateCount; i++) {
-                Players[StartState + i].Serialize(writer);
+            for (int i = 0; i < CharacterStateCount; i++) {
+                CharacterStates[StartState + i].Serialize(writer);
             }
         }
 
         public void Deserialize(NetDataReader reader) {
             Tick = reader.GetUShort();
             LastProcessedAction = reader.GetUShort();
-            PlayerStateCount = reader.AvailableBytes / PlayerPacket.Size;
+            CharacterStateCount = reader.AvailableBytes / CharacterPacket.Size;
             
-            if (Players == null || Players.Length < PlayerStateCount) {
-                Players = new PlayerPacket[PlayerStateCount];
+            if (CharacterStates == null || CharacterStates.Length < CharacterStateCount) {
+                CharacterStates = new CharacterPacket[CharacterStateCount];
             }
 
-            for (int i = 0; i < PlayerStateCount; i++) {
-                Players[i].Deserialize(reader);
+            for (int i = 0; i < CharacterStateCount; i++) {
+                CharacterStates[i].Deserialize(reader);
             }
         }
     }

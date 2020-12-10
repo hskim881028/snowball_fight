@@ -5,6 +5,6 @@ namespace SF.Common.Packet.AutoSerializable {
         public string UserName { get; set; }
         public bool NewPlayer { get; set; }
         public ushort ServerTick { get; set; }
-        public PlayerPacket Player { get; set; }
+        public CharacterPacket Character { get; set; }
     }
 }

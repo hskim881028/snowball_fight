@@ -14,7 +14,7 @@ namespace SF.Service {
         }
 
         public void Update() {
-            _inputService.Update();
+            _inputService.Update(); // for local 
             _actionService.Update();
         }
 

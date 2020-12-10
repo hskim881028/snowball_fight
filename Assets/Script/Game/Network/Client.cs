@@ -10,9 +10,10 @@ using SF.Common.Util;
 using UnityEngine;
 using Random = System.Random;
 
-namespace SF {
+namespace SF.Network {
     public class Client : INetEventListener {
         private ServerStatePacket _cachedServerState;
+        private ClientManager _clientManager;
         private readonly NetDataWriter _writer;
         private readonly NetPacketProcessor _packetProcessor;
         private readonly NetManager _netManager;
@@ -30,7 +31,7 @@ namespace SF {
             _writer = new NetDataWriter();
             _packetProcessor = new NetPacketProcessor();
             _packetProcessor.RegisterNestedType((writer, v) => writer.Put(v), reader => reader.GetVector2());
-            _packetProcessor.RegisterNestedType<PlayerPacket>();
+            _packetProcessor.RegisterNestedType<CharacterPacket>();
             _packetProcessor.SubscribeReusable<PlayerJoinedPacket>(OnPlayerJoined);
             _packetProcessor.SubscribeReusable<PlayerLeavedPacket>(OnPlayerLeaved);
             _packetProcessor.SubscribeReusable<JoinAcceptPacket>(OnJoinAccept);
@@ -41,18 +42,28 @@ namespace SF {
             _netManager = new NetManager(this, true);
             _netManager.Start();
             
-            LogicTimer = new LogicTimer(() => { });
+            LogicTimer = new LogicTimer(OnUpdateLogic);
         }
 
         public void Update() {
             _netManager.PollEvents();
             LogicTimer.Update();
         }
+        
+        private void OnUpdateLogic()
+        {
+            _clientManager.UpdateLogic();
+        }
 
         public void Destroy() {
             _netManager.Stop();
         }
 
+        private void OnServerState() {
+            // todo : 여기서 클라이언트 캐릭터 매니저 불러주고
+            // 매니저에서 리모트 캐릭터들 정보 동기화 -> 뷰 좌표 갱신 끝
+        }
+        
         private void OnPlayerJoined(PlayerJoinedPacket packet) {
             Debug.Log($"[Client] Player joined: {packet.UserName}");
             // var remotePlayer = new RemotePlayer(_playerManager, packet.UserName, packet);
@@ -74,6 +85,12 @@ namespace SF {
             // _playerManager.AddClientPlayer(clientPlayer, view);
         }
 
+        public void Connect(string ip, Action<DisconnectInfo> onDisconnected)
+        {
+            _onDisconnected = onDisconnected;
+            _netManager.Connect(ip, 10515, "EnterGame");
+        }
+        
         public void SendPacketSerializable<T>(PacketType type, T packet, SendType sendType) where T : INetSerializable {
             if (_server == null) {
                 return;
@@ -94,12 +111,6 @@ namespace SF {
             _writer.Put((byte) PacketType.Serialized);
             _packetProcessor.Write(_writer, packet); // 내부에서 시리얼라이즈
             _server.Send(_writer, sendType);
-        }
-        
-        public void Connect(string ip, Action<DisconnectInfo> onDisconnected)
-        {
-            _onDisconnected = onDisconnected;
-            _netManager.Connect(ip, 10515, "EnterGame");
         }
 
         public void OnPeerConnected(NetPeer peer) {
@@ -123,6 +134,20 @@ namespace SF {
             Debug.Log($"[Client] NetworkError: {socketError}");
         }
 
+        public void OnNetworkReceiveUnconnected(IPEndPoint remoteEndPoint,
+                                                NetPacketReader reader,
+                                                UnconnectedMessageType messageType) {
+            // do nothing
+        }
+
+        public void OnNetworkLatencyUpdate(NetPeer peer, int latency) {
+            _ping = latency;
+        }
+
+        public void OnConnectionRequest(ConnectionRequest request) {
+            request.Reject();
+        }
+        
         public void OnNetworkReceive(NetPeer peer, NetPacketReader reader, SendType sendType) {
             byte packetType = reader.GetByte();
             if (packetType >= NetworkGeneral.PacketTypesCount) {
@@ -133,29 +158,15 @@ namespace SF {
             switch (pt) {
                 case PacketType.ServerState:
                     _cachedServerState.Deserialize(reader);
+                    OnServerState(); // <- 매번 서버에서 불러주고있음
                     break;
                 case PacketType.Serialized:
                     _packetProcessor.ReadAllPackets(reader);
-                    break;
-                case PacketType.Movement:
                     break;
                 default:
                     Debug.Log($"[Client] OnNetworkReceive - Unhandled packet : {pt}");
                     break;
             }
-        }
-
-        public void OnNetworkReceiveUnconnected(IPEndPoint remoteEndPoint,
-                                                NetPacketReader reader,
-                                                UnconnectedMessageType messageType) {
-        }
-
-        public void OnNetworkLatencyUpdate(NetPeer peer, int latency) {
-            _ping = latency;
-        }
-
-        public void OnConnectionRequest(ConnectionRequest request) {
-            request.Reject();
         }
     }
 }
