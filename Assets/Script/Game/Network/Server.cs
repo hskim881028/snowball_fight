@@ -55,11 +55,11 @@ namespace SF.Network {
             if (_serverTick % 2 == 0) {
                 _serverStatePacket.Tick = _serverTick;
                 _serverStatePacket.CharacterStates = 
-                    _serverManager.ServerCharacters.
+                    _serverManager.Characters.
                                    Select(x => x.Value.CharacterPacket)
                                    .ToArray();
 
-                foreach (var pair in _serverManager.ServerCharacters) {
+                foreach (var pair in _serverManager.Characters) {
                     var serverCharacter = pair.Value;
                     int statesMax = serverCharacter.Peer.GetMaxSinglePacketSize(SendType.Unreliable) -
                                     ServerStatePacket.HeaderSize;
@@ -67,9 +67,9 @@ namespace SF.Network {
                     
                     
 
-                    for (int s = 0; s < (_serverManager.ServerCharacters.Count - 1) / statesMax + 1; s++) {
+                    for (int s = 0; s < (_serverManager.Characters.Count - 1) / statesMax + 1; s++) {
                         _serverStatePacket.LastProcessedAction = serverCharacter.LastProcessedAction;
-                        _serverStatePacket.CharacterStateCount = _serverManager.ServerCharacters.Count;
+                        _serverStatePacket.CharacterStateCount = _serverManager.Characters.Count;
                         _serverStatePacket.StartState = s * statesMax;
                         serverCharacter.Peer.Send(WriteSerializable(PacketType.ServerState, _serverStatePacket),
                                                   SendType.Unreliable);
@@ -105,7 +105,7 @@ namespace SF.Network {
 
             // 이전 유저들에게 정보 다 보내줌  
             pj.NewPlayer = false;
-            foreach (var pair in _serverManager.ServerCharacters.Where(pair => pair.Key != (byte) peer.Id)) {
+            foreach (var pair in _serverManager.Characters.Where(pair => pair.Key != (byte) peer.Id)) {
                 pj.UserName = pair.Value._data.Name;
                 pj.CharacterPacket = pair.Value.Packet;
                 peer.Send(WritePacket(pj), SendType.ReliableOrdered);

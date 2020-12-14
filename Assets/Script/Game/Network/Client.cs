@@ -18,7 +18,7 @@ namespace SF.Network {
         private readonly NetPacketProcessor _packetProcessor;
         private readonly NetManager _netManager;
         private readonly string _userName;
-        
+
         private Action<DisconnectInfo> _onDisconnected;
 
         private NetPeer _server;
@@ -42,7 +42,7 @@ namespace SF.Network {
 
             _netManager = new NetManager(this, true);
             _netManager.Start();
-            
+
             LogicTimer = new LogicTimer(OnUpdateLogic);
         }
 
@@ -50,9 +50,8 @@ namespace SF.Network {
             _netManager.PollEvents();
             LogicTimer.Update();
         }
-        
-        private void OnUpdateLogic()
-        {
+
+        private void OnUpdateLogic() {
             _clientManager.UpdateLogic();
         }
 
@@ -62,13 +61,14 @@ namespace SF.Network {
 
         private void OnServerState() {
             // todo : 여기서 클라이언트 캐릭터 매니저 불러주고
-            if (NetworkGeneral.SeqDiff(_cachedServerState.Tick, _lastServerTick) <= 0)
+            if (NetworkGeneral.SeqDiff(_cachedServerState.Tick, _lastServerTick) <= 0) {
                 return;
-            
+            }
+
             _lastServerTick = _cachedServerState.Tick;
             // 매니저에서 리모트 캐릭터들 정보 동기화 -> 뷰 좌표 갱신 끝
         }
-        
+
         private void OnPlayerJoined(PlayerJoinedPacket packet) {
             Debug.Log($"[Client] Player joined: {packet.UserName}");
             // var remotePlayer = new RemotePlayer(_playerManager, packet.UserName, packet);
@@ -91,12 +91,11 @@ namespace SF.Network {
             // _playerManager.AddClientPlayer(clientPlayer, view);
         }
 
-        public void Connect(string ip, Action<DisconnectInfo> onDisconnected)
-        {
+        public void Connect(string ip, Action<DisconnectInfo> onDisconnected) {
             _onDisconnected = onDisconnected;
             _netManager.Connect(ip, 10515, "EnterGame");
         }
-        
+
         public void SendPacketSerializable<T>(PacketType type, T packet, SendType sendType) where T : INetSerializable {
             if (_server == null) {
                 return;
@@ -131,7 +130,7 @@ namespace SF.Network {
             _server = null;
             LogicTimer.Stop();
             Debug.Log($"[Client] OnPeerDisconnected - Reason : {disconnectInfo.Reason} ");
-            
+
             _onDisconnected?.Invoke(disconnectInfo);
             _onDisconnected = null;
         }
@@ -153,7 +152,7 @@ namespace SF.Network {
         public void OnConnectionRequest(ConnectionRequest request) {
             request.Reject();
         }
-        
+
         public void OnNetworkReceive(NetPeer peer, NetPacketReader reader, SendType sendType) {
             byte packetType = reader.GetByte();
             if (packetType >= NetworkGeneral.PacketTypesCount) {

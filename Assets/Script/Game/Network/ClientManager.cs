@@ -1,7 +1,6 @@
-﻿namespace SF.Network {
-    public class ClientManager {
-        public void UpdateLogic() {
-            
-        }
+﻿using System.Collections.Generic;
+
+namespace SF.Network {
+    public class ClientManager : NetworkCharacterManager<ClientCharacter> {
     }
 }
