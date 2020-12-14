@@ -13,7 +13,7 @@ using Random = System.Random;
 namespace SF.Network {
     public class Client : INetEventListener {
         private ServerStatePacket _cachedServerState;
-        private ClientManager _clientManager;
+        private readonly ClientManager _clientManager = new ClientManager();
         private readonly NetDataWriter _writer;
         private readonly NetPacketProcessor _packetProcessor;
         private readonly NetManager _netManager;
@@ -22,6 +22,7 @@ namespace SF.Network {
         private Action<DisconnectInfo> _onDisconnected;
 
         private NetPeer _server;
+        private ushort _lastServerTick;
         private int _ping;
 
         public static LogicTimer LogicTimer { get; private set; }
@@ -61,6 +62,10 @@ namespace SF.Network {
 
         private void OnServerState() {
             // todo : 여기서 클라이언트 캐릭터 매니저 불러주고
+            if (NetworkGeneral.SeqDiff(_cachedServerState.Tick, _lastServerTick) <= 0)
+                return;
+            
+            _lastServerTick = _cachedServerState.Tick;
             // 매니저에서 리모트 캐릭터들 정보 동기화 -> 뷰 좌표 갱신 끝
         }
         
@@ -79,6 +84,7 @@ namespace SF.Network {
 
         private void OnJoinAccept(JoinAcceptPacket packet) {
             Debug.Log("[Client] OnJoinAccept : " + packet.Id);
+            _lastServerTick = packet.ServerTick;
             // _lastServerTick = packet.ServerTick;
             // var clientPlayer = new ClientPlayer(this, _playerManager, _userName, packet.Id);
             // var view = ClientPlayerView.Create(_clientPlayerViewPrefab, clientPlayer);

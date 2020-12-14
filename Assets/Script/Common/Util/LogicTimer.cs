@@ -34,6 +34,12 @@ namespace SF.Common.Util {
             // (타이머 틱 수 - 마지막시간) / 초당 틱 수 
             _accumulator += (double) (elapsedTicks - _lastElapsedTicks) / Stopwatch.Frequency;
             _lastElapsedTicks = elapsedTicks;
+            
+            while (_accumulator >= FixedDelta)
+            {
+                _action();
+                _accumulator -= FixedDelta;
+            }
         }
         
     }

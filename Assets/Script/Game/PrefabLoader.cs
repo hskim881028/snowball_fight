@@ -13,7 +13,7 @@ namespace SF {
             var clone = Object.Instantiate(prefab, parent);
             var view = clone.GetComponent<CharacterView>();
             var data = new CharacterData(id, string.Empty);
-            var variableData = new CharacterVariableData(Vector2.zero, 10);
+            var variableData = new CharacterVariableData(Vector2.zero);
             return new Character.Character(data, new Character.CharacterController(data, variableData, view), view);
         }
 

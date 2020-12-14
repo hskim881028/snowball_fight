@@ -4,7 +4,7 @@ namespace SF.Character {
     public class CharacterController {
         private readonly CharacterVariableData _variableData;
         private readonly CharacterView _view;
-        private CharacterData _data;
+        private readonly CharacterData _data;
 
         public CharacterController(CharacterData data,
                                    CharacterVariableData variableData,

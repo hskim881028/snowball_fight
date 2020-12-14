@@ -21,7 +21,7 @@ namespace SF.Network {
 
         private ServerStatePacket _serverStatePacket;
 
-        private ServerManager _serverManager;
+        private readonly ServerManager _serverManager = new ServerManager();
 
         public ushort Tick => _serverTick;
 
@@ -54,12 +54,18 @@ namespace SF.Network {
 
             if (_serverTick % 2 == 0) {
                 _serverStatePacket.Tick = _serverTick;
+                _serverStatePacket.CharacterStates = 
+                    _serverManager.ServerCharacters.
+                                   Select(x => x.Value.CharacterPacket)
+                                   .ToArray();
 
                 foreach (var pair in _serverManager.ServerCharacters) {
                     var serverCharacter = pair.Value;
                     int statesMax = serverCharacter.Peer.GetMaxSinglePacketSize(SendType.Unreliable) -
                                     ServerStatePacket.HeaderSize;
                     statesMax /= CharacterPacket.Size;
+                    
+                    
 
                     for (int s = 0; s < (_serverManager.ServerCharacters.Count - 1) / statesMax + 1; s++) {
                         _serverStatePacket.LastProcessedAction = serverCharacter.LastProcessedAction;

@@ -8,6 +8,7 @@ namespace SF.Network {
 
         public NetworkCharacter(CharacterData data) {
             _data = data;
+            _variableData = new CharacterVariableData(Vector3.zero);
         }
     }
 }

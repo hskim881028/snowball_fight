@@ -11,7 +11,7 @@ namespace SF.Network {
             ServerCharacters.Add(id, serverCharacter);
         }
 
-        public  void UpdateLogic() {
+        public void UpdateLogic() {
             // foreach (var character in _characters) {
             //     character
             // }
