@@ -1,8 +1,10 @@
 ﻿using System.Collections.Generic;
+using SF.Service;
 
 namespace SF.Network {
     public class ServerManager : NetworkCharacterManager<ServerCharacter> {
-        private Server _server;
+        private ServerSerivce _serverSerivce;
+
         // private readonly AntilagSystem _antilagSystem;
 
         // public Dictionary<byte, ServerCharacter> ServerCharacters { get; } = new Dictionary<byte, ServerCharacter>();
@@ -18,5 +20,6 @@ namespace SF.Network {
         // }
         
         // public IEnumerable<CharacterPacket> 
+        
     }
 }

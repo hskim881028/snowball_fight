@@ -1,5 +1,6 @@
 ﻿using LibChaiiLatte;
-using SF.Network;
+using SF.Service;
+using UniRx;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -7,25 +8,21 @@ namespace SF.UI {
     public class MenuUI : MonoBehaviour {
         [SerializeField] private Text _disconnectedInfo;
         [SerializeField] private InputField _ipInputField;
+        [SerializeField] private Button _hostButton;
+        [SerializeField] private Button _joinButton;
 
-        private Server _server;
-        private Client _client;
+        public void Init(ServerSerivce serverSerivce, ClientService clientService) {
+            _hostButton.OnClickAsObservable().Subscribe(_ => {
+                serverSerivce.StartServer();
+                clientService.Connect("localhost", OnDisconnected);
+                gameObject.SetActive(false);
+            });
+            _joinButton.OnClickAsObservable().Subscribe(_ => {
+                clientService.Connect(_ipInputField.text, OnDisconnected);
+                gameObject.SetActive(false);
+            });
 
-        public void Init(Server server, Client client) {
-            _server = server;
-            _client = client;
             _ipInputField.text = NetUtils.GetLocalIp(LocalAddrType.IPv4);
-        }
-        
-        public void OnClickHost() {
-            _server.StartServer();
-            _client.Connect("localhost", OnDisconnected);
-            this.gameObject.SetActive(false);
-        }
-
-        public void OnClickJoin() {
-            _client.Connect(_ipInputField.text, OnDisconnected);
-            this.gameObject.SetActive(false);
         }
 
         private void OnDisconnected(DisconnectInfo info) {

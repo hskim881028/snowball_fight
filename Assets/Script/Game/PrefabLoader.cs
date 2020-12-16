@@ -1,7 +1,6 @@
-﻿using System;
-using SF.Character;
+﻿using SF.Character;
 using SF.Joystick;
-using SF.Network;
+using SF.Service;
 using SF.UI;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -23,10 +22,10 @@ namespace SF {
             return new JoystickController(new JoystickData(), clone.GetComponent<JoystickView>());
         }
 
-        public static void LoadMenuUI(Transform parent, Server server, Client client) {
+        public static void LoadMenuUI(Transform parent, ServerSerivce server, ClientService clientService) {
             var prefab = Resources.Load("Prefab/UI/Menu") as GameObject;
             var clone = Object.Instantiate(prefab, parent);
-            clone.GetComponent<MenuUI>().Init(server, client);
+            clone.GetComponent<MenuUI>().Init(server, clientService);
         }
     }
 }

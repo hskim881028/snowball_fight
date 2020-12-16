@@ -14,8 +14,8 @@ namespace SF.Character {
             _view = view;
         }
 
-        public void Move(Vector2 delta) {
-            _variableData.AddPosition(delta);
+        public void Move(Vector2 position) {
+            _variableData.Position = position;
             _view.SetPosition(_variableData.Position);
         }
     }

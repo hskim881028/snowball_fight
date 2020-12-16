@@ -1,4 +1,6 @@
-﻿using SF.Action;
+﻿using LibChaiiLatte;
+using SF.Common.Packet;
+using SF.Common.Packet.ManualSerializable;
 using SF.Joystick;
 using UnityEngine;
 using UnityEngine.UI;
@@ -6,14 +8,14 @@ using UnityEngine.UI;
 namespace SF.Service {
     public class InputService {
         private Image _inputPanel;
-        private readonly ActionService _actionService;
+        private readonly ClientService _clientService;
         private readonly JoystickController _joystickController;
 
-        public InputService(ActionService actionService, JoystickController joystickController) {
-            _actionService = actionService;
+        public InputService(ClientService clientService, JoystickController joystickController) {
+            _clientService = clientService;
             _joystickController = joystickController;
         }
-        
+
         public void Update() {
             if (Input.touchCount > 0) {
                 EnqueueAction(1, Input.touches[0].deltaPosition);
@@ -22,15 +24,15 @@ namespace SF.Service {
             if (Input.GetMouseButtonDown(0)) {
                 _joystickController.OnPointerDown(Input.mousePosition);
             }
-            
+
             if (Input.GetMouseButton(0)) {
                 _joystickController.OnDrag(Input.mousePosition);
             }
-            
+
             if (Input.GetMouseButtonUp(0)) {
                 _joystickController.OnPointerUp();
             }
-            
+
             if (Input.GetKey(KeyCode.A)) {
                 EnqueueAction(1, Vector2.left);
             }
@@ -51,9 +53,10 @@ namespace SF.Service {
                 EnqueueAction(1, _joystickController.Data.Value);
             }
         }
-    
+
         private void EnqueueAction(int id, Vector2 delta) {
-            _actionService.EnqueueAction(new MoveAction {mID = id, mDelta = delta * Time.deltaTime});
+            var p = new MovePacket { Id = 0, Direction = delta * Time.deltaTime, ServerTick = 0, };
+            _clientService.SendPacketSerializable(PacketType.Movement, p, SendType.Unreliable);
         }
     }
 }

@@ -3,14 +3,17 @@ using System.Net;
 using System.Net.Sockets;
 using LibChaiiLatte;
 using LibChaiiLatte.Utils;
+using NUnit.Framework;
 using SF.Common.Packet;
 using SF.Common.Packet.AutoSerializable;
 using SF.Common.Packet.ManualSerializable;
 using SF.Common.Util;
+using SF.Network;
+using SF.Service;
 using UnityEngine;
 
-namespace SF.Network {
-    public class Server : INetEventListener {
+namespace SF.Service {
+    public class ServerSerivce : INetEventListener {
         private NetManager _netManager;
         private NetPacketProcessor _packetProcessor;
 
@@ -21,11 +24,12 @@ namespace SF.Network {
 
         private ServerStatePacket _serverStatePacket;
 
-        private readonly ServerManager _serverManager = new ServerManager();
+        private readonly ServerManager _serverManager;
 
         public ushort Tick => _serverTick;
 
-        public Server() {
+        public ServerSerivce() {
+            _serverManager = new ServerManager();
             _logicTimer = new LogicTimer(OnUpdateLogic);
             _packetProcessor = new NetPacketProcessor();
 
@@ -54,9 +58,7 @@ namespace SF.Network {
 
             if (_serverTick % 2 == 0) {
                 _serverStatePacket.Tick = _serverTick;
-                _serverStatePacket.CharacterStates =
-                    _serverManager.Characters.Select(x => x.Value.CharacterPacket).ToArray();
-
+                _serverStatePacket.CharacterStates = getCharacterPackets();
                 foreach (var pair in _serverManager.Characters) {
                     var serverCharacter = pair.Value;
                     int statesMax = serverCharacter.Peer.GetMaxSinglePacketSize(SendType.Unreliable) -
@@ -67,11 +69,24 @@ namespace SF.Network {
                         _serverStatePacket.LastProcessedAction = serverCharacter.LastProcessedAction;
                         _serverStatePacket.CharacterStateCount = _serverManager.Characters.Count;
                         _serverStatePacket.StartState = s * statesMax;
+
+                        foreach (var characterPacket in _serverStatePacket.CharacterStates) {
+                            Debug.Log($"Id : {characterPacket.Id} - characterPacket : {characterPacket.Position}");
+                        }
+
                         serverCharacter.Peer.Send(WriteSerializable(PacketType.ServerState, _serverStatePacket),
                                                   SendType.Unreliable);
                     }
                 }
             }
+        }
+
+        private CharacterPacket[] getCharacterPackets() {
+            // todo : tick, rotation 넣어 줘야됨
+            return _serverManager.Characters
+                                 .Select(x => new CharacterPacket() {
+                                     Id = x.Key, Position = x.Value._variableData.Position
+                                 }).ToArray();
         }
 
         public void Destroy() // todo : consider whether it is correct to doestroy on stage. 
@@ -125,10 +140,16 @@ namespace SF.Network {
         }
 
         private void OnInputReceived(NetPacketReader reader, NetPeer peer) {
-            // if (peer.Tag == null)
-            //     return;
-            //
-            // _movePacket.Deserialize(reader);
+            if (peer.Tag == null)
+                return;
+
+            _movePacket.Deserialize(reader);
+            var character = _serverManager.Characters[_movePacket.Id];
+            if (character != null) {
+                var prePosition = character._variableData.Position;
+                character._variableData.Position = prePosition + _movePacket.Direction;
+            }
+
             // var player = (Serc) peer.Tag;
             //
             // bool antilagApplied = _serverManager.EnableAntilag(player);
@@ -181,7 +202,7 @@ namespace SF.Network {
                 return;
             PacketType pt = (PacketType) packetType;
             switch (pt) {
-                case PacketType.Movement: // 매번 클라에서 보내주고있음
+                case PacketType.Movement: // Input service
                     OnInputReceived(reader, peer);
                     break;
                 case PacketType.Serialized:

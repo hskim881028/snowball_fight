@@ -9,9 +9,5 @@ namespace SF.Character {
             Position = position;
             // Hp = hp;
         }
-
-        public void AddPosition(Vector2 value) {
-            Position += value;
-        }
     }
 }

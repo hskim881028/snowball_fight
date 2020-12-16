@@ -12,6 +12,7 @@ namespace SF.Network {
 
         public ServerCharacter(string name, NetPeer peer, Vector2 position) : base(peer.Id, name) {
             Peer = peer;
+            Peer.Tag = this;
             CharacterPacket = new CharacterPacket {Id = (byte) peer.Id};
             _variableData.Position = position;
         }

@@ -7,13 +7,15 @@ using SF.Common.Packet;
 using SF.Common.Packet.AutoSerializable;
 using SF.Common.Packet.ManualSerializable;
 using SF.Common.Util;
+using SF.Network;
+using SF.Service;
 using UnityEngine;
 using Random = System.Random;
 
-namespace SF.Network {
-    public class Client : INetEventListener {
+namespace SF.Service {
+    public class ClientService : INetEventListener {
         private ServerStatePacket _cachedServerState;
-        private readonly ClientManager _clientManager = new ClientManager();
+        private readonly ClientManager _clientManager;
         private readonly NetDataWriter _writer;
         private readonly NetPacketProcessor _packetProcessor;
         private readonly NetManager _netManager;
@@ -27,7 +29,8 @@ namespace SF.Network {
 
         public static LogicTimer LogicTimer { get; private set; }
 
-        public Client() {
+        public ClientService(ActionService actionService, CharacterService characterService, Transform stage) {
+            _clientManager = new ClientManager(actionService, characterService, stage);
             _cachedServerState = new ServerStatePacket();
             _writer = new NetDataWriter();
             _packetProcessor = new NetPacketProcessor();
@@ -66,7 +69,7 @@ namespace SF.Network {
 
             _lastServerTick = _cachedServerState.Tick;
 
-            _clientManager.UpdateLogic();
+            _clientManager.UpdateLogic(_cachedServerState.CharacterStates);
             // 매니저에서 리모트 캐릭터들 정보 동기화 -> 뷰 좌표 갱신 끝
         }
 
@@ -106,6 +109,8 @@ namespace SF.Network {
             if (_peer == null) {
                 return;
             }
+            
+            Debug.Log($"SendPacketSerializable");
 
             _writer.Reset();
             _writer.Put((byte) type);
