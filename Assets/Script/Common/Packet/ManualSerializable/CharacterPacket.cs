@@ -3,7 +3,7 @@ using SF.Common.Util;
 using UnityEngine;
 
 namespace SF.Common.Packet.ManualSerializable {
-    public struct CharacterPacket : INetSerializable {
+    public struct CharacterPacket : INetSerializable { // 캐릭터 정보있음
         public byte Id;
         public ushort Tick;
         public Vector2 Position;

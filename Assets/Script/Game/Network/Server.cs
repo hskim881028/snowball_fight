@@ -31,7 +31,7 @@ namespace SF.Network {
 
             _packetProcessor.RegisterNestedType((w, v) => w.Put(v), r => r.GetVector2());
             _packetProcessor.RegisterNestedType<CharacterPacket>();
-            _packetProcessor.SubscribeReusable<JoinPacket, NetPeer>(OnJoinReceived);
+            _packetProcessor.SubscribeReusable<JoinPacket, NetPeer>(OnJoin);
             _netManager = new NetManager(this, true);
         }
 
@@ -54,18 +54,14 @@ namespace SF.Network {
 
             if (_serverTick % 2 == 0) {
                 _serverStatePacket.Tick = _serverTick;
-                _serverStatePacket.CharacterStates = 
-                    _serverManager.Characters.
-                                   Select(x => x.Value.CharacterPacket)
-                                   .ToArray();
+                _serverStatePacket.CharacterStates =
+                    _serverManager.Characters.Select(x => x.Value.CharacterPacket).ToArray();
 
                 foreach (var pair in _serverManager.Characters) {
                     var serverCharacter = pair.Value;
                     int statesMax = serverCharacter.Peer.GetMaxSinglePacketSize(SendType.Unreliable) -
                                     ServerStatePacket.HeaderSize;
                     statesMax /= CharacterPacket.Size;
-                    
-                    
 
                     for (int s = 0; s < (_serverManager.Characters.Count - 1) / statesMax + 1; s++) {
                         _serverStatePacket.LastProcessedAction = serverCharacter.LastProcessedAction;
@@ -84,30 +80,30 @@ namespace SF.Network {
             _logicTimer.Stop();
         }
 
-        private void OnJoinReceived(JoinPacket packet, NetPeer peer) {
+        private void OnJoin(JoinPacket packet, NetPeer peer) {
             Debug.Log("[S] Join packet received: " + packet.UserName);
+
             var serverCharacter = new ServerCharacter(packet.UserName, peer, Vector2.zero);
-            _serverManager.AddCharadcter((byte)peer.Id, serverCharacter);
+            _serverManager.AddCharadcter((byte) peer.Id, serverCharacter);
 
             //Send join accept
-            var ja = new JoinAcceptPacket {Id = (byte)peer.Id, ServerTick = _serverTick};
+            var ja = new JoinAcceptPacket { Id = (byte) peer.Id, UserName = packet.UserName, ServerTick = _serverTick };
             peer.Send(WritePacket(ja), SendType.ReliableOrdered);
 
             // 들어온 친구한테 기존 정보 다 보내줌
-            var pj = new PlayerJoinedPacket 
-            {
+            var pj = new CharacterJoinedPacket {
                 UserName = packet.UserName,
-                NewPlayer = true,
-                CharacterPacket = serverCharacter.Packet,
+                NewCharacter = true,
+                CharacterPacket = serverCharacter.CharacterPacket,
                 ServerTick = _serverTick
             };
             _netManager.SendToAll(WritePacket(pj), SendType.ReliableOrdered, peer);
 
             // 이전 유저들에게 정보 다 보내줌  
-            pj.NewPlayer = false;
+            pj.NewCharacter = false;
             foreach (var pair in _serverManager.Characters.Where(pair => pair.Key != (byte) peer.Id)) {
                 pj.UserName = pair.Value._data.Name;
-                pj.CharacterPacket = pair.Value.Packet;
+                pj.CharacterPacket = pair.Value.CharacterPacket;
                 peer.Send(WritePacket(pj), SendType.ReliableOrdered);
             }
         }
@@ -141,7 +137,7 @@ namespace SF.Network {
             //     _serverManager.DisableAntilag();
         }
 
-        public void OnPeerConnected(NetPeer peer) {
+        public void OnPeerConnected(NetPeer peer) { // 2 순위
             Debug.Log($"[Server] Player connected: {peer.EndPoint}");
         }
 

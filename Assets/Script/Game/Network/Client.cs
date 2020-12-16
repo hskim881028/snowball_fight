@@ -21,7 +21,7 @@ namespace SF.Network {
 
         private Action<DisconnectInfo> _onDisconnected;
 
-        private NetPeer _server;
+        private NetPeer _peer;
         private ushort _lastServerTick;
         private int _ping;
 
@@ -33,7 +33,7 @@ namespace SF.Network {
             _packetProcessor = new NetPacketProcessor();
             _packetProcessor.RegisterNestedType((writer, v) => writer.Put(v), reader => reader.GetVector2());
             _packetProcessor.RegisterNestedType<CharacterPacket>();
-            _packetProcessor.SubscribeReusable<PlayerJoinedPacket>(OnPlayerJoined);
+            _packetProcessor.SubscribeReusable<CharacterJoinedPacket>(OnPlayerJoined);
             _packetProcessor.SubscribeReusable<PlayerLeavedPacket>(OnPlayerLeaved);
             _packetProcessor.SubscribeReusable<JoinAcceptPacket>(OnJoinAccept);
 
@@ -52,7 +52,6 @@ namespace SF.Network {
         }
 
         private void OnUpdateLogic() {
-            _clientManager.UpdateLogic();
         }
 
         public void Destroy() {
@@ -66,14 +65,30 @@ namespace SF.Network {
             }
 
             _lastServerTick = _cachedServerState.Tick;
+
+            _clientManager.UpdateLogic();
             // 매니저에서 리모트 캐릭터들 정보 동기화 -> 뷰 좌표 갱신 끝
         }
 
-        private void OnPlayerJoined(PlayerJoinedPacket packet) {
+        private void OnPlayerJoined(CharacterJoinedPacket packet) {
             Debug.Log($"[Client] Player joined: {packet.UserName}");
+            var clientCharacter = new ClientCharacter(packet.CharacterPacket.Id, packet.UserName);
+            _clientManager.AddCharadcter(packet.CharacterPacket.Id, clientCharacter);
+
             // var remotePlayer = new RemotePlayer(_playerManager, packet.UserName, packet);
             // var view = RemotePlayerView.Create(_remotePlayerViewPrefab, remotePlayer);
             // _playerManager.AddPlayer(remotePlayer, view);
+        }
+
+        private void OnJoinAccept(JoinAcceptPacket packet) {
+            Debug.Log("[Client] OnJoinAccept : " + packet.Id);
+            _lastServerTick = packet.ServerTick;
+            var clientCharacter = new ClientCharacter(packet.Id, packet.UserName);
+            _clientManager.AddCharadcter(packet.Id, clientCharacter);
+            // _lastServerTick = packet.ServerTick;
+            // var clientPlayer = new ClientPlayer(this, _playerManager, _userName, packet.Id);
+            // var view = ClientPlayerView.Create(_clientPlayerViewPrefab, clientPlayer);
+            // _playerManager.AddClientPlayer(clientPlayer, view);
         }
 
         private void OnPlayerLeaved(PlayerLeavedPacket packet) {
@@ -82,52 +97,44 @@ namespace SF.Network {
             //     Debug.Log($"[Client] _playerManager : {packet.Id} - {player.Name}");
         }
 
-        private void OnJoinAccept(JoinAcceptPacket packet) {
-            Debug.Log("[Client] OnJoinAccept : " + packet.Id);
-            _lastServerTick = packet.ServerTick;
-            // _lastServerTick = packet.ServerTick;
-            // var clientPlayer = new ClientPlayer(this, _playerManager, _userName, packet.Id);
-            // var view = ClientPlayerView.Create(_clientPlayerViewPrefab, clientPlayer);
-            // _playerManager.AddClientPlayer(clientPlayer, view);
-        }
-
         public void Connect(string ip, Action<DisconnectInfo> onDisconnected) {
             _onDisconnected = onDisconnected;
             _netManager.Connect(ip, 10515, "EnterGame");
         }
 
         public void SendPacketSerializable<T>(PacketType type, T packet, SendType sendType) where T : INetSerializable {
-            if (_server == null) {
+            if (_peer == null) {
                 return;
             }
 
             _writer.Reset();
             _writer.Put((byte) type);
             packet.Serialize(_writer);
-            _server.Send(_writer, sendType);
+            _peer.Send(_writer, sendType);
         }
 
         public void SendPacket<T>(T packet, SendType sendType) where T : class, new() {
-            if (_server == null) {
+            if (_peer == null) {
                 return;
             }
 
             _writer.Reset();
             _writer.Put((byte) PacketType.Serialized);
             _packetProcessor.Write(_writer, packet); // 내부에서 시리얼라이즈
-            _server.Send(_writer, sendType);
+            _peer.Send(_writer, sendType);
         }
 
+        // 1 순위
         public void OnPeerConnected(NetPeer peer) {
             Debug.Log($"[Client] OnPeerConnected - EndPoint: {peer.EndPoint}");
-            _server = peer;
-            SendPacket(new JoinPacket {UserName = _userName}, SendType.ReliableOrdered);
+            _peer = peer;
+            SendPacket(new JoinPacket { UserName = _userName }, SendType.ReliableOrdered);
             LogicTimer.Start();
         }
 
         public void OnPeerDisconnected(NetPeer peer, DisconnectInfo disconnectInfo) {
             // _playerManager.Clear();
-            _server = null;
+            _peer = null;
             LogicTimer.Stop();
             Debug.Log($"[Client] OnPeerDisconnected - Reason : {disconnectInfo.Reason} ");
 

@@ -14,6 +14,7 @@ namespace SF.UI {
         public void Init(Server server, Client client) {
             _server = server;
             _client = client;
+            _ipInputField.text = NetUtils.GetLocalIp(LocalAddrType.IPv4);
         }
         
         public void OnClickHost() {
