@@ -3,30 +3,23 @@ using System.Net;
 using System.Net.Sockets;
 using LibChaiiLatte;
 using LibChaiiLatte.Utils;
-using NUnit.Framework;
 using SF.Common.Packet;
 using SF.Common.Packet.AutoSerializable;
 using SF.Common.Packet.ManualSerializable;
 using SF.Common.Util;
 using SF.Network;
-using SF.Service;
 using UnityEngine;
 
 namespace SF.Service {
     public class ServerSerivce : INetEventListener {
-        private NetManager _netManager;
-        private NetPacketProcessor _packetProcessor;
-
-        public const int MaxPlayers = 64;
-        private LogicTimer _logicTimer;
+        private readonly NetManager _netManager;
+        private readonly NetPacketProcessor _packetProcessor;
+        private readonly LogicTimer _logicTimer;
         private readonly NetDataWriter _cachedWriter = new NetDataWriter();
         private ushort _serverTick;
 
         private ServerStatePacket _serverStatePacket;
-
         private readonly ServerManager _serverManager;
-
-        public ushort Tick => _serverTick;
 
         public ServerSerivce() {
             _serverManager = new ServerManager();
@@ -55,7 +48,7 @@ namespace SF.Service {
 
         private void OnUpdateLogic() {
             _serverTick = (ushort) ((_serverTick + 1) % NetworkGeneral.MaxGameSequence);
-            Debug.Log($"_serverTick :{_serverTick }");
+            Debug.Log($"_serverTick :{_serverTick}");
 
             if (_serverTick % 2 == 0) { // 짝수일때만
                 _serverStatePacket.Tick = _serverTick;
@@ -141,8 +134,9 @@ namespace SF.Service {
         }
 
         private void OnInputReceived(NetPacketReader reader, NetPeer peer) {
-            if (peer.Tag == null)
+            if (peer.Tag == null) {
                 return;
+            }
 
             _movePacket.Deserialize(reader);
             var character = _serverManager.Characters[_movePacket.Id];
@@ -150,13 +144,6 @@ namespace SF.Service {
                 var prePosition = character._variableData.Position;
                 character._variableData.Position = prePosition + _movePacket.Direction;
             }
-
-            // var player = (Serc) peer.Tag;
-            //
-            // bool antilagApplied = _serverManager.EnableAntilag(player);
-            // player.ApplyInput(_movePacket, LogicTimer.FixedDelta);
-            // if(antilagApplied)
-            //     _serverManager.DisableAntilag();
         }
 
         public void OnPeerConnected(NetPeer peer) { // 2 순위
@@ -188,8 +175,8 @@ namespace SF.Service {
 
         public void OnNetworkLatencyUpdate(NetPeer peer, int latency) {
             if (peer.Tag != null) {
-                // var p = (ServerPlayer) peer.Tag;
-                // p.Ping = latency;
+                var character = (ServerCharacter) peer.Tag;
+                character.Ping = latency;
             }
         }
 
