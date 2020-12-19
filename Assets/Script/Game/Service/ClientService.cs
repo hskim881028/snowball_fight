@@ -8,7 +8,6 @@ using SF.Common.Packet.AutoSerializable;
 using SF.Common.Packet.ManualSerializable;
 using SF.Common.Util;
 using SF.Network;
-using SF.Service;
 using UnityEngine;
 using Random = System.Random;
 
@@ -26,6 +25,8 @@ namespace SF.Service {
         private NetPeer _peer;
         private ushort _lastServerTick;
         private int _ping;
+        
+        public byte Id { get; private set; }
 
         public static LogicTimer LogicTimer { get; private set; }
 
@@ -84,6 +85,7 @@ namespace SF.Service {
         }
 
         private void OnJoinAccept(JoinAcceptPacket packet) {
+            Id = packet.Id;
             Debug.Log("[Client] OnJoinAccept : " + packet.Id);
             _lastServerTick = packet.ServerTick;
             var clientCharacter = new ClientCharacter(packet.Id, packet.UserName);

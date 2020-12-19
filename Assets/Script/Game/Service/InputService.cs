@@ -18,7 +18,7 @@ namespace SF.Service {
 
         public void Update() {
             if (Input.touchCount > 0) {
-                EnqueueAction(1, Input.touches[0].deltaPosition);
+                EnqueueAction(Input.touches[0].deltaPosition);
             }
 
             if (Input.GetMouseButtonDown(0)) {
@@ -34,28 +34,28 @@ namespace SF.Service {
             }
 
             if (Input.GetKey(KeyCode.A)) {
-                EnqueueAction(1, Vector2.left);
+                EnqueueAction(Vector2.left);
             }
 
             if (Input.GetKey(KeyCode.D)) {
-                EnqueueAction(1, Vector2.right);
+                EnqueueAction(Vector2.right);
             }
 
             if (Input.GetKey(KeyCode.W)) {
-                EnqueueAction(1, Vector2.up);
+                EnqueueAction(Vector2.up);
             }
 
             if (Input.GetKey(KeyCode.S)) {
-                EnqueueAction(1, Vector2.down);
+                EnqueueAction(Vector2.down);
             }
 
             if (_joystickController.Data.Value.magnitude > 0) {
-                EnqueueAction(1, _joystickController.Data.Value);
+                EnqueueAction(_joystickController.Data.Value);
             }
         }
 
-        private void EnqueueAction(int id, Vector2 delta) {
-            var p = new MovePacket { Id = 0, Direction = delta * Time.deltaTime, ServerTick = 0, };
+        private void EnqueueAction(Vector2 delta) {
+            var p = new MovePacket { Id = _clientService.Id, Direction = delta * Time.deltaTime, ServerTick = 0, };
             _clientService.SendPacketSerializable(PacketType.Movement, p, SendType.Unreliable);
         }
     }
