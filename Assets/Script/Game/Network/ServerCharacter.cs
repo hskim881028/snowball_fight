@@ -8,7 +8,7 @@ namespace SF.Network {
         
         public ushort LastProcessedAction { get; private set; }
         public NetPeer Peer { get; }
-        public CharacterPacket CharacterPacket { get; protected set; }
+        public CharacterPacket CharacterPacket { get; }
 
         public ServerCharacter(string name, NetPeer peer, Vector2 position) : base(peer.Id, name) {
             Peer = peer;

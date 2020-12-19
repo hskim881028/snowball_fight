@@ -28,7 +28,7 @@ namespace SF.Network {
                 _actionService.EnqueueAction(new MoveAction {
                     Id = character.Id, Position = character.Position
                 });
-                Debug.Log($"Id : {character.Id} - Pos : {character.Position}");
+                // Debug.Log($"Id : {character.Id} - Pos : {character.Position}");
             }
         }
     }

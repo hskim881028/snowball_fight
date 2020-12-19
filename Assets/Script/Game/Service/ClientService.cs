@@ -63,25 +63,19 @@ namespace SF.Service {
         }
 
         private void OnServerState() {
-            // todo : 여기서 클라이언트 캐릭터 매니저 불러주고
             if (NetworkGeneral.SeqDiff(_cachedServerState.Tick, _lastServerTick) <= 0) {
+                //skip duplicate or old because we received that packet unreliably
                 return;
             }
 
             _lastServerTick = _cachedServerState.Tick;
-
             _clientManager.UpdateLogic(_cachedServerState.CharacterStates);
-            // 매니저에서 리모트 캐릭터들 정보 동기화 -> 뷰 좌표 갱신 끝
         }
 
         private void OnPlayerJoined(CharacterJoinedPacket packet) {
             Debug.Log($"[Client] Player joined: {packet.UserName}");
             var clientCharacter = new ClientCharacter(packet.CharacterPacket.Id, packet.UserName);
             _clientManager.AddCharadcter(packet.CharacterPacket.Id, clientCharacter);
-
-            // var remotePlayer = new RemotePlayer(_playerManager, packet.UserName, packet);
-            // var view = RemotePlayerView.Create(_remotePlayerViewPrefab, remotePlayer);
-            // _playerManager.AddPlayer(remotePlayer, view);
         }
 
         private void OnJoinAccept(JoinAcceptPacket packet) {
@@ -90,16 +84,10 @@ namespace SF.Service {
             _lastServerTick = packet.ServerTick;
             var clientCharacter = new ClientCharacter(packet.Id, packet.UserName);
             _clientManager.AddCharadcter(packet.Id, clientCharacter);
-            // _lastServerTick = packet.ServerTick;
-            // var clientPlayer = new ClientPlayer(this, _playerManager, _userName, packet.Id);
-            // var view = ClientPlayerView.Create(_clientPlayerViewPrefab, clientPlayer);
-            // _playerManager.AddClientPlayer(clientPlayer, view);
         }
 
         private void OnPlayerLeaved(PlayerLeavedPacket packet) {
-            // var player = _playerManager.RemovePlayer(packet.Id);
-            // if(player != null)
-            //     Debug.Log($"[Client] _playerManager : {packet.Id} - {player.Name}");
+            _clientManager.RemoveCharacter(packet.Id);
         }
 
         public void Connect(string ip, Action<DisconnectInfo> onDisconnected) {
@@ -112,8 +100,6 @@ namespace SF.Service {
                 return;
             }
             
-            Debug.Log($"SendPacketSerializable");
-
             _writer.Reset();
             _writer.Put((byte) type);
             packet.Serialize(_writer);
@@ -140,7 +126,7 @@ namespace SF.Service {
         }
 
         public void OnPeerDisconnected(NetPeer peer, DisconnectInfo disconnectInfo) {
-            // _playerManager.Clear();
+            // _characterManager.Clear();
             _peer = null;
             LogicTimer.Stop();
             Debug.Log($"[Client] OnPeerDisconnected - Reason : {disconnectInfo.Reason} ");

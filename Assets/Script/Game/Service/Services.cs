@@ -11,7 +11,6 @@ namespace SF.Service {
 
         public Services(Transform canvas, Transform stage, JoystickController joystickController/*, Character.Character character*/) {
             var characterService = new CharacterService();
-            // characterService.Add(character.Data.Id, character);
             var stageContext = new StageContext(characterService);
             _actionService = new ActionService(stageContext);
             _clientService = new ClientService(_actionService, characterService, stage);

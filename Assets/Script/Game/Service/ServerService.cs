@@ -55,8 +55,9 @@ namespace SF.Service {
 
         private void OnUpdateLogic() {
             _serverTick = (ushort) ((_serverTick + 1) % NetworkGeneral.MaxGameSequence);
+            Debug.Log($"_serverTick :{_serverTick }");
 
-            if (_serverTick % 2 == 0) {
+            if (_serverTick % 2 == 0) { // 짝수일때만
                 _serverStatePacket.Tick = _serverTick;
                 _serverStatePacket.CharacterStates = getCharacterPackets();
                 foreach (var pair in _serverManager.Characters) {
@@ -70,9 +71,9 @@ namespace SF.Service {
                         _serverStatePacket.CharacterStateCount = _serverManager.Characters.Count;
                         _serverStatePacket.StartState = s * statesMax;
 
-                        foreach (var characterPacket in _serverStatePacket.CharacterStates) {
-                            Debug.Log($"Id : {characterPacket.Id} - characterPacket : {characterPacket.Position}");
-                        }
+                        // foreach (var characterPacket in _serverStatePacket.CharacterStates) {
+                        //     Debug.Log($"Id : {characterPacket.Id} - characterPacket : {characterPacket.Position}");
+                        // }
 
                         serverCharacter.Peer.Send(WriteSerializable(PacketType.ServerState, _serverStatePacket),
                                                   SendType.Unreliable);

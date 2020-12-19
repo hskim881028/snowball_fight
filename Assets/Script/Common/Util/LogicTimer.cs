@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using Debug = UnityEngine.Debug;
 
 namespace SF.Common.Util {
     public class LogicTimer {
@@ -31,7 +32,7 @@ namespace SF.Common.Util {
 
         public void Update() {
             long elapsedTicks = _stopwatch.ElapsedTicks; // 현재 인스턴스가 측정한 총 경과 시간(타이머 틱 수)을 가져옵니다.
-            // (타이머 틱 수 - 마지막시간) / 초당 틱 수 
+            // (현재틱 - 이전틱) / 초당 틱 수 
             _accumulator += (double) (elapsedTicks - _lastElapsedTicks) / Stopwatch.Frequency;
             _lastElapsedTicks = elapsedTicks;
             
@@ -41,6 +42,5 @@ namespace SF.Common.Util {
                 _accumulator -= FixedDelta;
             }
         }
-        
     }
 }
