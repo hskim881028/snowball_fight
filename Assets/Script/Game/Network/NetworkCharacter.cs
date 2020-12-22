@@ -1,6 +1,5 @@
 ﻿using SF.Character;
-using SF.Common.Packet.ManualSerializable;
-using UnityEngine;
+using SF.Common.Util;
 
 namespace SF.Network {
     public class NetworkCharacter {
@@ -10,7 +9,7 @@ namespace SF.Network {
         
         public NetworkCharacter(int id, string name) {
             _data = new CharacterData(id, name);
-            _variableData = new CharacterVariableData(Vector3.zero);
+            _variableData = new CharacterVariableData(Gameconfig.StartingPoint[id]);
         }
     }
 }

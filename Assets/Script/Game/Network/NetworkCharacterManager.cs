@@ -12,5 +12,9 @@ namespace SF.Network {
         public void RemoveCharacter(byte id) {
             Characters.Remove(id);
         }
+
+        public T GetCharacter(byte id) {
+            return Characters[id];
+        }
     }
 }

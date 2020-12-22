@@ -55,7 +55,7 @@ namespace SF.Service {
         }
 
         private void EnqueueAction(Vector2 delta) {
-            var p = new MovePacket { Id = _clientService.Id, Direction = delta * Time.deltaTime, ServerTick = 0, };
+            var p = new MovePacket { Id = _clientService.Id, Direction = delta * (3.0f * Time.deltaTime), ServerTick = 0, };
             _clientService.SendPacketSerializable(PacketType.Movement, p, SendType.Unreliable);
         }
     }

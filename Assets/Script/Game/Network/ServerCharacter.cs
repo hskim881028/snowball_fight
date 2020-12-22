@@ -1,5 +1,4 @@
 ﻿using LibChaiiLatte;
-using SF.Character;
 using SF.Common.Packet.ManualSerializable;
 using UnityEngine;
 

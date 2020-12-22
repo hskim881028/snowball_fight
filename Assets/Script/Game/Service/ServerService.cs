@@ -16,10 +16,12 @@ namespace SF.Service {
         private readonly NetPacketProcessor _packetProcessor;
         private readonly LogicTimer _logicTimer;
         private readonly NetDataWriter _cachedWriter = new NetDataWriter();
-        private ushort _serverTick;
 
-        private ServerStatePacket _serverStatePacket;
         private readonly ServerManager _serverManager;
+        private ServerStatePacket _serverStatePacket;
+        private MovePacket _movePacket;
+        
+        private ushort _serverTick;
 
         public ServerSerivce() {
             _serverManager = new ServerManager();
@@ -48,7 +50,6 @@ namespace SF.Service {
 
         private void OnUpdateLogic() {
             _serverTick = (ushort) ((_serverTick + 1) % NetworkGeneral.MaxGameSequence);
-            Debug.Log($"_serverTick :{_serverTick}");
 
             if (_serverTick % 2 == 0) { // 짝수일때만
                 _serverStatePacket.Tick = _serverTick;
@@ -92,7 +93,7 @@ namespace SF.Service {
         private void OnJoin(JoinPacket packet, NetPeer peer) {
             Debug.Log("[S] Join packet received: " + packet.UserName);
 
-            var serverCharacter = new ServerCharacter(packet.UserName, peer, Vector2.zero);
+            var serverCharacter = new ServerCharacter(packet.UserName, peer, Gameconfig.StartingPoint[peer.Id]);
             _serverManager.AddCharadcter((byte) peer.Id, serverCharacter);
 
             //Send join accept
@@ -117,8 +118,6 @@ namespace SF.Service {
             }
         }
 
-        private MovePacket _movePacket;
-
         private NetDataWriter WriteSerializable<T>(PacketType type, T packet) where T : struct, INetSerializable {
             _cachedWriter.Reset();
             _cachedWriter.Put((byte) type);
@@ -133,7 +132,7 @@ namespace SF.Service {
             return _cachedWriter;
         }
 
-        private void OnInputReceived(NetPacketReader reader, NetPeer peer) {
+        private void OnMovement(NetPacketReader reader, NetPeer peer) {
             if (peer.Tag == null) {
                 return;
             }
@@ -141,8 +140,22 @@ namespace SF.Service {
             _movePacket.Deserialize(reader);
             var character = _serverManager.Characters[_movePacket.Id];
             if (character != null) {
-                var prePosition = character._variableData.Position;
-                character._variableData.Position = prePosition + _movePacket.Direction;
+                var position = character._variableData.Position + _movePacket.Direction;
+
+                var x1 = Gameconfig.StartingPoint[_movePacket.Id].x - (Gameconfig.GroundSize.x * 0.5f);
+                var x2 = Gameconfig.StartingPoint[_movePacket.Id].x + (Gameconfig.GroundSize.x * 0.5f);
+                var minX = x1 < x2 ? x1 : x2;
+                var maxX = x1 > x2 ? x1 : x2;
+                
+                var y1 = Gameconfig.StartingPoint[_movePacket.Id].y - (Gameconfig.GroundSize.y * 0.5f);
+                var y2 = Gameconfig.StartingPoint[_movePacket.Id].y + (Gameconfig.GroundSize.y * 0.5f);
+                var minY = y1 < y2 ? y1 : y2;
+                var maxY = y1 > y2 ? y1 : y2;
+
+                position.x = Mathf.Clamp(position.x, minX, maxX);
+                position.y = Mathf.Clamp(position.y, minY, maxY);
+
+                character._variableData.Position = position;
             }
         }
 
@@ -190,8 +203,8 @@ namespace SF.Service {
                 return;
             PacketType pt = (PacketType) packetType;
             switch (pt) {
-                case PacketType.Movement: // Input service
-                    OnInputReceived(reader, peer);
+                case PacketType.Movement:
+                    OnMovement(reader, peer);
                     break;
                 case PacketType.Serialized:
                     _packetProcessor.ReadAllPackets(reader, peer);
