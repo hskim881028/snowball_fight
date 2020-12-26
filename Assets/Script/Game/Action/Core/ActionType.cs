@@ -5,7 +5,7 @@ namespace SF.Action {
     public enum EActionType {
         None,
         Attack,
-        Move,
+        Move
     }
 
     public static class ExtensionActionType {
@@ -13,9 +13,7 @@ namespace SF.Action {
             if (type.BaseType != null) {
                 var actionType = type.BaseType.GenericTypeArguments[0];
                 var attribute = Attribute.GetCustomAttribute(actionType, typeof(ActionMappingAttribute));
-                if (attribute is ActionMappingAttribute actionMapping) {
-                    return actionMapping.ActionType;
-                }
+                if (attribute is ActionMappingAttribute actionMapping) return actionMapping.ActionType;
             }
 
             return EActionType.None;

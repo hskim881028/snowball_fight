@@ -12,15 +12,15 @@ using UnityEngine;
 
 namespace SF.Service {
     public class ServerSerivce : INetEventListener {
+        private readonly NetDataWriter _cachedWriter = new NetDataWriter();
+        private readonly LogicTimer _logicTimer;
         private readonly NetManager _netManager;
         private readonly NetPacketProcessor _packetProcessor;
-        private readonly LogicTimer _logicTimer;
-        private readonly NetDataWriter _cachedWriter = new NetDataWriter();
 
         private readonly ServerManager _serverManager;
-        private ServerStatePacket _serverStatePacket;
         private MovePacket _movePacket;
-        
+        private ServerStatePacket _serverStatePacket;
+
         private ushort _serverTick;
 
         public ServerSerivce() {
@@ -34,10 +34,64 @@ namespace SF.Service {
             _netManager = new NetManager(this, true);
         }
 
-        public void StartServer() {
-            if (_netManager.IsRunning) {
-                return;
+        public void OnPeerConnected(NetPeer peer) { // 2 순위
+            Debug.Log($"[Server] Player connected: {peer.EndPoint}");
+        }
+
+        public void OnPeerDisconnected(NetPeer peer, DisconnectInfo disconnectInfo) {
+            Debug.Log($"[Server] Player disconnected: {disconnectInfo.Reason}");
+
+            if (peer.Tag != null) {
+                // byte playerId = (byte)peer.Id;
+                // if (_playerManager.RemovePlayer(playerId))
+                // {
+                //     var plp = new PlayerLeavedPacket { Id = (byte)peer.Id };
+                //     _netManager.SendToAll(WritePacket(plp), DeliveryMethod.ReliableOrdered);
+                // }
             }
+        }
+
+        public void OnNetworkError(IPEndPoint endPoint, SocketError socketError) {
+            Debug.Log($"[Server] NetworkError: {socketError}");
+        }
+
+        public void OnNetworkReceiveUnconnected(IPEndPoint remoteEndPoint,
+                                                NetPacketReader reader,
+                                                UnconnectedMessageType messageType) {
+            // do nothing
+        }
+
+        public void OnNetworkLatencyUpdate(NetPeer peer, int latency) {
+            if (peer.Tag != null) {
+                var character = (ServerCharacter) peer.Tag;
+                character.Ping = latency;
+            }
+        }
+
+        public void OnConnectionRequest(ConnectionRequest request) {
+            request.AcceptIfKey("EnterGame");
+        }
+
+        public void OnNetworkReceive(NetPeer peer, NetPacketReader reader, SendType sendType) {
+            var packetType = reader.GetByte();
+            if (packetType >= NetworkGeneral.PacketTypesCount)
+                return;
+            var pt = (PacketType) packetType;
+            switch (pt) {
+                case PacketType.Movement:
+                    OnMovement(reader, peer);
+                    break;
+                case PacketType.Serialized:
+                    _packetProcessor.ReadAllPackets(reader, peer);
+                    break;
+                default:
+                    Debug.Log($"[Server] OnNetworkReceive - Unhandled packet : {pt}");
+                    break;
+            }
+        }
+
+        public void StartServer() {
+            if (_netManager.IsRunning) return;
 
             _netManager.Start(10515);
             _logicTimer.Start();
@@ -56,11 +110,11 @@ namespace SF.Service {
                 _serverStatePacket.CharacterStates = getCharacterPackets();
                 foreach (var pair in _serverManager.Characters) {
                     var serverCharacter = pair.Value;
-                    int statesMax = serverCharacter.Peer.GetMaxSinglePacketSize(SendType.Unreliable) -
+                    var statesMax = serverCharacter.Peer.GetMaxSinglePacketSize(SendType.Unreliable) -
                                     ServerStatePacket.HeaderSize;
                     statesMax /= CharacterPacket.Size;
 
-                    for (int s = 0; s < (_serverManager.Characters.Count - 1) / statesMax + 1; s++) {
+                    for (var s = 0; s < (_serverManager.Characters.Count - 1) / statesMax + 1; s++) {
                         _serverStatePacket.LastProcessedAction = serverCharacter.LastProcessedAction;
                         _serverStatePacket.CharacterStateCount = _serverManager.Characters.Count;
                         _serverStatePacket.StartState = s * statesMax;
@@ -79,7 +133,7 @@ namespace SF.Service {
         private CharacterPacket[] getCharacterPackets() {
             // todo : tick, rotation 넣어 줘야됨
             return _serverManager.Characters
-                                 .Select(x => new CharacterPacket() {
+                                 .Select(x => new CharacterPacket {
                                      Id = x.Key, Position = x.Value._variableData.Position
                                  }).ToArray();
         }
@@ -133,22 +187,20 @@ namespace SF.Service {
         }
 
         private void OnMovement(NetPacketReader reader, NetPeer peer) {
-            if (peer.Tag == null) {
-                return;
-            }
+            if (peer.Tag == null) return;
 
             _movePacket.Deserialize(reader);
             var character = _serverManager.Characters[_movePacket.Id];
             if (character != null) {
                 var position = character._variableData.Position + _movePacket.Direction;
 
-                var x1 = Gameconfig.StartingPoint[_movePacket.Id].x - (Gameconfig.GroundSize.x * 0.5f);
-                var x2 = Gameconfig.StartingPoint[_movePacket.Id].x + (Gameconfig.GroundSize.x * 0.5f);
+                var x1 = Gameconfig.StartingPoint[_movePacket.Id].x - Gameconfig.GroundSize.x * 0.5f;
+                var x2 = Gameconfig.StartingPoint[_movePacket.Id].x + Gameconfig.GroundSize.x * 0.5f;
                 var minX = x1 < x2 ? x1 : x2;
                 var maxX = x1 > x2 ? x1 : x2;
-                
-                var y1 = Gameconfig.StartingPoint[_movePacket.Id].y - (Gameconfig.GroundSize.y * 0.5f);
-                var y2 = Gameconfig.StartingPoint[_movePacket.Id].y + (Gameconfig.GroundSize.y * 0.5f);
+
+                var y1 = Gameconfig.StartingPoint[_movePacket.Id].y - Gameconfig.GroundSize.y * 0.5f;
+                var y2 = Gameconfig.StartingPoint[_movePacket.Id].y + Gameconfig.GroundSize.y * 0.5f;
                 var minY = y1 < y2 ? y1 : y2;
                 var maxY = y1 > y2 ? y1 : y2;
 
@@ -156,62 +208,6 @@ namespace SF.Service {
                 position.y = Mathf.Clamp(position.y, minY, maxY);
 
                 character._variableData.Position = position;
-            }
-        }
-
-        public void OnPeerConnected(NetPeer peer) { // 2 순위
-            Debug.Log($"[Server] Player connected: {peer.EndPoint}");
-        }
-
-        public void OnPeerDisconnected(NetPeer peer, DisconnectInfo disconnectInfo) {
-            Debug.Log($"[Server] Player disconnected: {disconnectInfo.Reason}");
-
-            if (peer.Tag != null) {
-                // byte playerId = (byte)peer.Id;
-                // if (_playerManager.RemovePlayer(playerId))
-                // {
-                //     var plp = new PlayerLeavedPacket { Id = (byte)peer.Id };
-                //     _netManager.SendToAll(WritePacket(plp), DeliveryMethod.ReliableOrdered);
-                // }
-            }
-        }
-
-        public void OnNetworkError(IPEndPoint endPoint, SocketError socketError) {
-            Debug.Log($"[Server] NetworkError: {socketError}");
-        }
-
-        public void OnNetworkReceiveUnconnected(IPEndPoint remoteEndPoint,
-                                                NetPacketReader reader,
-                                                UnconnectedMessageType messageType) {
-            // do nothing
-        }
-
-        public void OnNetworkLatencyUpdate(NetPeer peer, int latency) {
-            if (peer.Tag != null) {
-                var character = (ServerCharacter) peer.Tag;
-                character.Ping = latency;
-            }
-        }
-
-        public void OnConnectionRequest(ConnectionRequest request) {
-            request.AcceptIfKey("EnterGame");
-        }
-
-        public void OnNetworkReceive(NetPeer peer, NetPacketReader reader, SendType sendType) {
-            byte packetType = reader.GetByte();
-            if (packetType >= NetworkGeneral.PacketTypesCount)
-                return;
-            PacketType pt = (PacketType) packetType;
-            switch (pt) {
-                case PacketType.Movement:
-                    OnMovement(reader, peer);
-                    break;
-                case PacketType.Serialized:
-                    _packetProcessor.ReadAllPackets(reader, peer);
-                    break;
-                default:
-                    Debug.Log($"[Server] OnNetworkReceive - Unhandled packet : {pt}");
-                    break;
             }
         }
     }

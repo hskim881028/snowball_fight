@@ -23,13 +23,9 @@ namespace SF.Network {
         }
 
         public void UpdateLogic(IEnumerable<CharacterPacket> characterPackets) {
-            
-            foreach (var character in characterPackets) {
-                _actionService.EnqueueAction(new MoveAction {
-                    Id = character.Id, Position = character.Position
-                });
-                // Debug.Log($"Id : {character.Id} - Pos : {character.Position}");
-            }
+            foreach (var character in characterPackets)
+                _actionService.EnqueueAction(new MoveAction { Id = character.Id, Position = character.Position });
+            // Debug.Log($"Id : {character.Id} - Pos : {character.Position}");
         }
     }
 }

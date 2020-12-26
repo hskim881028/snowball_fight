@@ -7,9 +7,7 @@ namespace SF.Action {
 
         public EActionType ActionType {
             get {
-                if (CachedTypes.TryGetValue(GetType(), out var actionType)) {
-                    return actionType;
-                }
+                if (CachedTypes.TryGetValue(GetType(), out var actionType)) return actionType;
 
                 var attribute = Attribute.GetCustomAttribute(GetType(), typeof(ActionMappingAttribute), false);
                 if (attribute is ActionMappingAttribute actionAttribute) {

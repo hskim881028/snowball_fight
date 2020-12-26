@@ -4,11 +4,11 @@ using UnityEngine;
 
 namespace SF.Action {
     [ActionMapping(EActionType.Attack)]
-    public class AttackAction : BaseAction { }
+    public class AttackAction : BaseAction {
+    }
 
     public class AttackActionHandler : ActionHandler<AttackAction> {
-        protected override IEnumerator<CustomYieldInstruction> Execute(StageContext context,
-                                                                       AttackAction action) {
+        protected override IEnumerator<CustomYieldInstruction> Execute(StageContext context, AttackAction action) {
             throw new NotImplementedException();
         }
     }

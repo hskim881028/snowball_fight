@@ -4,8 +4,8 @@ using UnityEngine;
 namespace SF.Action {
     [ActionMapping(EActionType.Move)]
     public class MoveAction : BaseAction {
-        public Vector2 Position;
         public int Id;
+        public Vector2 Position;
     }
 
     public class MoveActionHandler : ActionHandler<MoveAction> {

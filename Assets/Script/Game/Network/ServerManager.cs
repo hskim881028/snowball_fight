@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using SF.Service;
+﻿using SF.Service;
 
 namespace SF.Network {
     public class ServerManager : NetworkCharacterManager<ServerCharacter> {
@@ -14,12 +13,11 @@ namespace SF.Network {
         // }
 
         // public void UpdateLogic() {
-            // foreach (var character in _characters) {
-            //     character
-            // }
+        // foreach (var character in _characters) {
+        //     character
         // }
-        
+        // }
+
         // public IEnumerable<CharacterPacket> 
-        
     }
 }

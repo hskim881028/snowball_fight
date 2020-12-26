@@ -5,8 +5,8 @@ using UnityEngine;
 
 namespace SF.Service {
     public class ActionService {
-        private readonly StageContext _context;
         private readonly Queue<BaseAction> _actions = new Queue<BaseAction>();
+        private readonly StageContext _context;
 
         private readonly Dictionary<EActionType, ActionHandler> _handlers =
             new Dictionary<EActionType, ActionHandler>(new ActionEqualityComparer());
@@ -18,7 +18,7 @@ namespace SF.Service {
             _context = context;
             _handlers.Clear();
             var types = GetType().Assembly.GetTypes();
-            foreach (var type in types) {
+            foreach (var type in types)
                 if (IsValidHandler(type)) {
                     var actionType = ExtensionActionType.TypeToActionType(type);
                     if (actionType != EActionType.None) {
@@ -30,7 +30,6 @@ namespace SF.Service {
                         _handlers.Add(actionType, Activator.CreateInstance(type) as ActionHandler);
                     }
                 }
-            }
         }
 
         private bool IsValidHandler(Type type) {
@@ -48,25 +47,20 @@ namespace SF.Service {
                 var next = node.Next;
                 var value = node.Value;
 
-                if (value.Current == null || value.Current.keepWaiting == false) {
+                if (value.Current == null || value.Current.keepWaiting == false)
                     try {
-                        if (value.MoveNext() == false) {
-                            _runningActions.Remove(currentNode);
-                        }
+                        if (value.MoveNext() == false) _runningActions.Remove(currentNode);
                     }
                     catch (Exception e) {
                         Debug.LogException(e);
                     }
-                }
 
                 node = next;
             }
         }
 
         private void Execute() {
-            foreach (var action in _actions) {
-                Excute(action);
-            }
+            foreach (var action in _actions) Excute(action);
 
             _actions.Clear();
         }
@@ -75,9 +69,7 @@ namespace SF.Service {
             try {
                 if (_handlers.ContainsKey(baseAction.ActionType)) {
                     var handler = _handlers[baseAction.ActionType].Execute(_context, baseAction);
-                    if (handler.MoveNext()) {
-                        _runningActions.AddLast(handler);
-                    }
+                    if (handler.MoveNext()) _runningActions.AddLast(handler);
                 }
             }
             catch (Exception e) {

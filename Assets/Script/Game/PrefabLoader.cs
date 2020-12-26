@@ -4,7 +4,7 @@ using SF.Joystick;
 using SF.Service;
 using SF.UI;
 using UnityEngine;
-using Object = UnityEngine.Object;
+using CharacterController = SF.Character.CharacterController;
 
 namespace SF {
     public static class PrefabLoader {
@@ -15,7 +15,7 @@ namespace SF {
             clone.transform.position = Gameconfig.StartingPoint[id];
             var data = new CharacterData(id, string.Empty);
             var variableData = new CharacterVariableData(Gameconfig.StartingPoint[id]);
-            return new Character.Character(data, new Character.CharacterController(data, variableData, view), view);
+            return new Character.Character(data, new CharacterController(data, variableData, view), view);
         }
 
         public static JoystickController LoadJoyStick(Transform parent) {
